@@ -2,495 +2,570 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acuaponía Builder V13: Final</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Acuaponía Tycoon</title>
     <style>
-        /* ESTILOS GENERALES */
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #eceff1; color: #333; margin: 0; padding: 0; user-select: none; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        
-        /* HEADER */
-        header { background: #263238; color: white; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; height: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; }
-        h1 { font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
-        
-        .stats-bar { display: flex; gap: 15px; align-items: center; font-size: 0.85rem; }
-        .stat-item { background: #37474f; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 5px; }
-        .stat-val { font-weight: bold; color: #4fc3f7; }
-
-        /* LAYOUT PRINCIPAL (3 COLUMNAS) */
-        .main-layout { display: grid; grid-template-columns: 220px 1fr 350px; flex: 1; overflow: hidden; position: relative; }
-        
-        /* 1. INVENTARIO (IZQUIERDA) */
-        .inventory { background: #fff; border-right: 1px solid #ddd; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 10; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        .inv-section { font-weight: bold; color: #0277bd; margin-top: 10px; border-bottom: 2px solid #e1f5fe; padding-bottom: 2px; font-size: 0.9rem; }
-        
-        .draggable-item { 
-            background: #f5f5f5; border: 1px solid #ccc; border-radius: 6px; padding: 8px; 
-            cursor: grab; display: flex; align-items: center; gap: 10px; transition: all 0.2s; font-size: 0.85rem;
+        /* --- ESTILOS BASE MÓVIL --- */
+        :root {
+            --primary: #00796b;
+            --accent: #ffb300;
+            --bg: #e0f2f1;
+            --danger: #e53935;
+            --text: #263238;
         }
-        .draggable-item:hover { transform: translateX(5px); background: #e3f2fd; border-color: #2196f3; }
-        .draggable-item:active { cursor: grabbing; }
-        .draggable-item.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
-        .item-icon { font-size: 1.2rem; min-width: 25px; text-align: center; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        /* 2. ZONA DE CONSTRUCCIÓN (CENTRO) */
-        .workspace { position: relative; background-image: radial-gradient(#cfd8dc 1px, transparent 1px); background-size: 20px 20px; background-color: #eceff1; overflow: hidden; }
-        
-        /* Instrucciones Flotantes (Dentro del juego) */
-        .instruction-panel {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95); padding: 8px 20px; border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; color: #006064;
-            border: 2px solid #00bcd4; z-index: 50; text-align: center; width: 70%; font-size: 0.9rem;
+        /* --- CABECERA (HUD) --- */
+        header {
+            background: white;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        .money-badge {
+            background: var(--accent);
+            color: #3e2723;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .level-badge {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* --- ÁREA VISUAL (SISTEMA) --- */
+        .system-view {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        /* Cama de Cultivo (Arriba) */
+        .grow-bed {
+            flex: 1;
+            background: #8d6e63;
+            border-radius: 10px;
+            border: 4px solid #5d4037;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .plant {
+            font-size: 0;
+            transition: font-size 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+        .gravel {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 30%;
+            background: repeating-linear-gradient(45deg, #795548, #795548 5px, #6d4c41 5px, #6d4c41 10px);
+            opacity: 0.5; border-radius: 0 0 6px 6px;
+        }
+
+        /* Tanque de Peces (Abajo) */
+        .fish-tank {
+            flex: 1.5;
+            background: linear-gradient(to bottom, #4fc3f7, #0288d1);
+            border-radius: 15px;
+            border: 4px solid #01579b;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .fish {
+            position: absolute;
+            font-size: 2rem;
+            transition: top 2s, left 2s, transform 0.5s;
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.2));
+        }
+        .water-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: transparent;
+            transition: background 1s;
             pointer-events: none;
         }
+        .water-dirty { background: rgba(62, 39, 35, 0.7); }
 
-        /* 3. PANEL EDUCATIVO (DERECHA) */
-        .edu-sidebar { 
-            background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 0; 
-            display: flex; flex-direction: column; box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+        /* Indicadores Flotantes */
+        .stat-bubble {
+            position: absolute;
+            background: rgba(255,255,255,0.9);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        #ph-meter { bottom: 10px; right: 10px; }
+        #amm-meter { bottom: 10px; left: 10px; }
+
+        /* --- BARRA DE ACCIONES (CONTROLES) --- */
+        .controls {
+            background: white;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            z-index: 20;
+        }
+
+        .btn-action {
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-action:active { transform: scale(0.95); background: #f5f5f5; }
+        .btn-action.primary { border-color: var(--primary); color: var(--primary); background: #e0f2f1; }
+        .btn-action.harvest { border-color: var(--accent); background: #fff8e1; color: #ff6f00; }
+        .btn-action.danger { border-color: var(--danger); color: var(--danger); animation: pulse 1s infinite; }
         
-        /* Panel de Control IA (Dentro de la barra derecha) */
-        .ai-control-panel {
-            background: #f3e5f5; padding: 15px; border-bottom: 1px solid #e1bee7;
-            position: sticky; top: 0; z-index: 20;
-        }
-        .ai-title { color: #6200ea; font-weight: bold; margin-bottom: 10px; display: block; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .ai-buttons { display: flex; gap: 10px; }
-        .btn-ai { 
-            flex: 1; background: white; border: 1px solid #6200ea; color: #6200ea; 
-            padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; 
-            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;
-        }
-        .btn-ai:hover { background: #6200ea; color: white; }
+        .btn-icon { font-size: 1.8rem; }
+        .btn-label { font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
 
-        /* Contenido del Manual */
-        .manual-content { padding: 20px; font-size: 0.9rem; line-height: 1.5; color: #444; }
-        .manual-content h2 { font-size: 1.1rem; color: #0277bd; border-bottom: 2px solid #b3e5fc; padding-bottom: 5px; margin-top: 25px; margin-bottom: 10px; }
-        .manual-content h2:first-child { margin-top: 0; }
-        .manual-content h3 { font-size: 0.95rem; color: #006064; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
-        .manual-content ul { padding-left: 20px; margin: 5px 0; }
-        .manual-content li { margin-bottom: 5px; }
-        .highlight-box { background: #e0f2f1; padding: 10px; border-radius: 5px; border-left: 4px solid #009688; margin: 10px 0; }
-
-        /* SISTEMA DE TUBERÍAS (SVG) */
-        .pipes-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .pipe-path { fill: none; stroke: #cfd8dc; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 1s; }
-        .pipe-water { fill: none; stroke: #4fc3f7; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10; animation: flow 1s linear infinite; opacity: 0; transition: opacity 1s; }
-        @keyframes flow { to { stroke-dashoffset: -20; } }
-
-        /* ZONAS DE CAÍDA (SLOTS) */
-        .drop-zone { 
-            position: absolute; border: 2px dashed #90a4ae; background: rgba(255,255,255,0.5); 
-            border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            color: #78909c; font-size: 0.75rem; text-align: center; transition: all 0.3s; z-index: 2;
+        /* Barra de progreso en botón */
+        .progress-bar {
+            position: absolute; bottom: 0; left: 0; height: 4px; width: 0%;
+            background: currentColor; transition: width 0.5s;
         }
-        .drop-zone.hovered { background: rgba(129, 199, 132, 0.6); border-color: #4caf50; transform: scale(1.05); }
-        .drop-zone.filled { border: none; background: transparent; }
+
+        /* --- MENÚ DE TIENDA (MODAL) --- */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: flex-end;
+        }
+        .modal-sheet {
+            background: white; width: 100%; max-height: 80vh;
+            border-radius: 20px 20px 0 0; padding: 20px; box-sizing: border-box;
+            overflow-y: auto; animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         
-        /* ETIQUETAS DE COMPONENTES */
-        .label-tag {
-            position: absolute; bottom: -20px; width: 100%; text-align: center;
-            background: #333; color: white; padding: 2px 0; font-size: 10px; border-radius: 4px;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        .shop-grid { display: grid; gap: 15px; }
+        .shop-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; background: #f9f9f9; border-radius: 12px; border: 1px solid #eee;
         }
-        .drop-zone.filled:hover .label-tag { opacity: 1; }
+        .shop-info h3 { margin: 0; font-size: 1rem; }
+        .shop-info p { margin: 5px 0 0; font-size: 0.8rem; color: #666; }
+        .btn-buy {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; font-weight: bold;
+        }
+        .btn-buy:disabled { background: #ccc; }
 
-        /* POSICIONES REDISEÑADAS (Ajustadas al nuevo layout) */
-        #slot-tank { bottom: 20px; left: 50%; transform: translateX(-50%); width: 280px; height: 140px; }
-        #slot-bed { top: 60px; right: 30px; width: 220px; height: 100px; }
-        #slot-mech { top: 80px; left: 30px; width: 80px; height: 110px; }
-        #slot-bio { top: 80px; left: 140px; width: 80px; height: 110px; }
-        #slot-pump { bottom: 30px; left: calc(50% - 110px); width: 40px; height: 40px; z-index: 5; }
-        #slot-pipes { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 60px; }
+        /* --- TEXTOS FLOTANTES --- */
+        .floater {
+            position: absolute; font-weight: bold; pointer-events: none;
+            animation: floatUp 1s ease-out forwards; z-index: 50;
+            text-shadow: 0 0 3px white;
+        }
+        @keyframes floatUp { to { transform: translateY(-50px); opacity: 0; } }
+        @keyframes pulse { 50% { opacity: 0.6; } }
 
-        /* OBJETOS VISUALES */
-        .object { width: 100%; height: 100%; position: relative; display: none; cursor: help; }
-        .object.visible { display: block; animation: popIn 0.4s ease-out; }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        /* ESTADOS */
+        .dead-fish { transform: rotate(180deg) !important; filter: grayscale(100%); }
 
-        /* Estilos componentes */
-        .visual-tank { background: rgba(33, 150, 243, 0.1); border: 3px solid #1976d2; border-radius: 0 0 10px 10px; border-top: none; position: relative; overflow: hidden; }
-        .visual-bed { background: #795548; border: 3px solid #4e342e; border-radius: 5px; position: relative; overflow: hidden; }
-        .visual-mech { background: #bdbdbd; border: 3px solid #616161; border-radius: 5px 5px 15px 15px; display: flex; align-items: center; justify-content: center; }
-        .visual-mech::after { content: "🌀"; font-size: 20px; opacity: 0.5; }
-        .visual-bio { background: #4db6ac; border: 3px solid #00796b; border-radius: 5px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 2px; padding: 5px; }
-        .bio-ball { width: 8px; height: 8px; background: #004d40; border-radius: 50%; opacity: 0.3; }
-        .visual-pump { background: #263238; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
-
-        /* AGUA Y VIDA */
-        .water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: rgba(33, 150, 243, 0.5); transition: height 1.5s ease-in-out; }
-        .water-fill.dirty { background: rgba(141, 110, 99, 0.6); }
-        .fish-mob { position: absolute; font-size: 20px; transition: all 1s; pointer-events: none; }
-        .plant-mob { position: absolute; bottom: 5px; font-size: 0px; transition: font-size 1s; transform-origin: bottom center; }
-
-        /* TOASTS */
-        .floater { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 200; text-shadow: 0 0 3px white; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
-
-        /* MODAL IA */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-box { background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 10px; text-align: center; position: relative; }
-        
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🌱 Acuaponía <span style="color:#81d4fa;">PRO</span></h1>
-    <div class="stats-bar">
-        <div class="stat-item" title="Bacterias Nitrificantes">🦠 <span id="stat-bac">0%</span></div>
-        <div class="stat-item" title="Nivel de Amoníaco">🧪 <span id="stat-amm">0</span></div>
-        <div class="stat-item" title="Acidez del agua">💧 pH <span id="stat-ph">7.0</span></div>
-        <div class="stat-item" title="Progreso de Cosecha">🥬 <span id="stat-grow">0%</span></div>
-    </div>
+    <div class="level-badge">Nivel <span id="lvl">1</span></div>
+    <div class="money-badge">💰 <span id="money">0</span></div>
 </header>
 
-<div class="main-layout">
+<div class="system-view" id="game-area">
+    <!-- CAMA DE CULTIVO -->
+    <div class="grow-bed" onclick="harvest()">
+        <div class="gravel"></div>
+        <div class="plant" id="p1">🥬</div>
+        <div class="plant" id="p2">🥬</div>
+        <div class="plant" id="p3">🥬</div>
+        <div class="stat-bubble" style="top: 10px; right: 10px;">
+            ⚡ Crecimiento: <span id="grow-rate">x1</span>
+        </div>
+    </div>
+
+    <!-- TANQUE DE PECES -->
+    <div class="fish-tank">
+        <div class="water-overlay" id="water"></div>
+        <div id="fish-container"></div>
+        
+        <div class="stat-bubble" id="amm-meter">🧪 NH3: <span id="val-nh3">0</span></div>
+        <div class="stat-bubble" id="ph-meter">💧 pH: <span id="val-ph">7.0</span></div>
+    </div>
+</div>
+
+<!-- CONTROLES INFERIORES -->
+<div class="controls">
+    <div class="btn-action primary" onclick="feedFish()">
+        <span class="btn-icon">🦐</span>
+        <span class="btn-label">Alimentar</span>
+    </div>
     
-    <!-- 1. INVENTARIO -->
-    <div class="inventory">
-        <div class="inv-section">1. Estructura</div>
-        <div class="draggable-item" draggable="true" data-type="tank" id="item-tank"><span class="item-icon">🟦</span> Tanque Peces</div>
-        <div class="draggable-item" draggable="true" data-type="pump" id="item-pump"><span class="item-icon">⚙️</span> Bomba Agua</div>
-        <div class="draggable-item" draggable="true" data-type="mech" id="item-mech"><span class="item-icon">🗑️</span> Filtro Mecánico</div>
-        <div class="draggable-item" draggable="true" data-type="bio" id="item-bio"><span class="item-icon">🦠</span> Biofiltro</div>
-        <div class="draggable-item" draggable="true" data-type="bed" id="item-bed"><span class="item-icon">🟫</span> Cama Cultivo</div>
-        <div class="draggable-item" draggable="true" data-type="pipes" id="item-pipes"><span class="item-icon">🔧</span> Tuberías</div>
-        <div class="draggable-item" draggable="true" data-type="water" id="item-water"><span class="item-icon">💧</span> Llenar Agua</div>
-
-        <div class="inv-section">2. Biología</div>
-        <div class="draggable-item locked" draggable="true" data-type="ammonia" id="item-ammonia"><span class="item-icon">🧪</span> Amoníaco</div>
-        <div class="draggable-item locked" draggable="true" data-type="fish" id="item-fish"><span class="item-icon">🐟</span> Peces</div>
-        <div class="draggable-item locked" draggable="true" data-type="plants" id="item-plants"><span class="item-icon">🌱</span> Semillas</div>
-        
-        <div class="inv-section">3. Mantenimiento</div>
-        <div class="draggable-item locked" draggable="true" data-type="food" id="item-food"><span class="item-icon">🦐</span> Comida</div>
-        <div class="draggable-item locked" draggable="true" data-type="base" id="item-base"><span class="item-icon">💊</span> Ajustar pH</div>
+    <div class="btn-action" id="btn-clean" onclick="cleanTank()">
+        <div class="progress-bar" id="clean-bar"></div>
+        <span class="btn-icon">🧹</span>
+        <span class="btn-label">Limpiar</span>
     </div>
 
-    <!-- 2. ÁREA DE TRABAJO -->
-    <div class="workspace" id="workspace">
-        
-        <!-- Instrucciones -->
-        <div class="instruction-panel" id="instruction">Arrastra el TANQUE DE PECES a la zona central inferior.</div>
-
-        <!-- Capa SVG para Tuberías -->
-        <svg class="pipes-layer">
-            <path id="path-1" class="pipe-path" d="M 0 0" />
-            <path id="flow-1" class="pipe-water" d="M 0 0" />
-            <path id="path-2" class="pipe-path" d="M 0 0" />
-            <path id="flow-2" class="pipe-water" d="M 0 0" />
-            <path id="path-3" class="pipe-path" d="M 0 0" />
-            <path id="flow-3" class="pipe-water" d="M 0 0" />
-            <path id="path-4" class="pipe-path" d="M 0 0" />
-            <path id="flow-4" class="pipe-water" d="M 0 0" />
-        </svg>
-
-        <!-- SLOTS -->
-        <div id="slot-tank" class="drop-zone" data-accept="tank,water,ammonia,fish,food,base">📍 Tanque<div class="object visual-tank" id="obj-tank"><div class="water-fill" id="water-tank"></div><div id="fish-container" style="position:absolute; inset:0;"></div><div class="label-tag">Tanque</div></div></div>
-        
-        <div id="slot-pump" class="drop-zone" data-accept="pump">⚙️<div class="object visual-pump" id="obj-pump"><div class="label-tag">Bomba</div></div></div>
-        
-        <div id="slot-mech" class="drop-zone" data-accept="mech">🗑️ F. Mecánico<div class="object visual-mech" id="obj-mech"><div class="label-tag">Decantador</div></div></div>
-        
-        <div id="slot-bio" class="drop-zone" data-accept="bio">🦠 Biofiltro<div class="object visual-bio" id="obj-bio"><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="label-tag">Biofiltro</div></div></div>
-        
-        <div id="slot-bed" class="drop-zone" data-accept="bed,plants">🟫 Cama Cultivo<div class="object visual-bed" id="obj-bed"><div class="water-fill" id="water-bed"></div><div id="plants-container" style="position:absolute; bottom:0; width:100%; text-align:center;"></div><div class="label-tag">Cama de Cultivo</div></div></div>
-        
-        <div id="slot-pipes" class="drop-zone" data-accept="pipes">🔗 Conectar<div class="object" id="obj-pipes" style="display:none;"></div></div>
-
+    <div class="btn-action" id="btn-ph" onclick="fixPH()">
+        <span class="btn-icon">💊</span>
+        <span class="btn-label">Ajustar pH</span>
     </div>
 
-    <!-- 3. PANEL EDUCATIVO (DERECHA) -->
-    <div class="edu-sidebar">
-        
-        <!-- Controles IA (Fijos Arriba) -->
-        <div class="ai-control-panel">
-            <span class="ai-title">Asistente Inteligente</span>
-            <div class="ai-buttons">
-                <button class="btn-ai" onclick="askAI('diagnosis')">🔍 Diagnóstico</button>
-                <button class="btn-ai" onclick="askAI('tips')">💡 Tip Experto</button>
-            </div>
-        </div>
+    <div class="btn-action harvest" onclick="harvest()" style="grid-column: span 3; background: #fff8e1;">
+        <span class="btn-icon">🥬</span>
+        <span class="btn-label">COSECHAR Y VENDER</span>
+        <div style="font-size:0.7rem; color:#ff6f00;">(Click aquí cuando crezcan)</div>
+    </div>
 
-        <!-- Contenido del Manual -->
-        <div class="manual-content">
-            <h2>CONCEPTOS BÁSICOS</h2>
-            <h3>1. ¿Qué es un sistema acuapónico?</h3>
-            <p>Es un método que combina <b>acuicultura</b> (peces) con <b>hidroponía</b> (plantas sin tierra). Forman un ecosistema donde el agua circula y los desechos de uno son alimento para el otro.</p>
-            
-            <h3>2. Relación Simbiótica</h3>
-            <ul>
-                <li><b>Peces:</b> Generan desechos (Amoníaco).</li>
-                <li><b>Bacterias:</b> Transforman desechos en Nitratos.</li>
-                <li><b>Plantas:</b> Absorben Nitratos y limpian el agua para los peces.</li>
-            </ul>
-
-            <h3>3. Ciclo del Agua</h3>
-            <p>Peces ➔ Amoníaco ➔ Nitritos ➔ Nitratos ➔ Plantas ➔ Agua Limpia ➔ Peces.</p>
-
-            <h2>PECES Y SU CUIDADO</h2>
-            <h3>1. Tipos de peces</h3>
-            <p><b>Tilapia:</b> Muy resistente y crece rápido. Ideal para principiantes.<br><b>Carpa y Bagre:</b> También comunes pero requieren cuidados específicos.</p>
-            
-            <h3>2. Parámetros Vitales</h3>
-            <div class="highlight-box">
-                pH: 6.5 – 7.0<br>
-                Temp: 20°C – 28°C<br>
-                Amoníaco: Casi 0
-            </div>
-
-            <h2>PLANTAS Y NUTRIENTES</h2>
-            <h3>1. ¿Qué cultivar?</h3>
-            <p>Lechugas, espinacas, albahaca y tomates son excelentes opciones.</p>
-            
-            <h3>2. Rol de las Raíces</h3>
-            <p>Actúan como un filtro fino y superficie para las bacterias.</p>
-
-            <h2>BIOLOGÍA (BACTERIAS)</h2>
-            <p>Sin bacterias, el sistema colapsa. Ellas viven en el biofiltro y la grava. Transforman el veneno (amoníaco) en comida (nitratos).</p>
-
-            <h2>DISEÑO TÉCNICO</h2>
-            <h3>Componentes Clave:</h3>
-            <ul>
-                <li><b>Tanque:</b> Donde viven los peces.</li>
-                <li><b>Bomba:</b> Mueve el agua hacia arriba.</li>
-                <li><b>Filtro Mecánico:</b> Atrapa sólidos (heces).</li>
-                <li><b>Biofiltro:</b> Hogar de bacterias.</li>
-                <li><b>Cama de Cultivo:</b> Soporte para plantas.</li>
-            </ul>
-
-            <h2>SUSTENTABILIDAD</h2>
-            <p>Ahorra hasta un <b>90% de agua</b> comparado con la agricultura tradicional y produce proteína y vegetales en espacios reducidos.</p>
-        </div>
+    <div class="btn-action" onclick="openShop()" style="grid-column: span 3; background: #e8eaf6; border-color: #3f51b5; color: #3f51b5;">
+        <span class="btn-icon">🛒</span>
+        <span class="btn-label">TIENDA DE MEJORAS</span>
     </div>
 </div>
 
-<!-- MODAL IA -->
-<div id="modal-ai" class="modal-overlay">
-    <div class="modal-box">
-        <h2 style="color:#6200ea;" id="ai-title">IA</h2>
-        <div id="ai-content">...</div>
-        <button class="btn-ai" style="margin: 20px auto; width: auto;" onclick="document.getElementById('modal-ai').style.display='none'">Cerrar</button>
-    </div>
-</div>
-
-<!-- MODAL VICTORIA -->
-<div id="modal-victory" class="modal-overlay">
-    <div class="modal-box" style="border: 5px solid gold;">
-        <h1 style="color:gold; font-size: 3rem; margin:0;">🏆</h1>
-        <h2 style="color:#006064;">¡Felicidades!</h2>
-        <p>Has completado el ciclo de vida acuapónico con éxito.</p>
-        <div style="margin: 20px; padding: 20px; border: 2px dashed #00bcd4; background: #e0f7fa; border-radius: 10px;">
-            <h3 style="margin-top:0;">CERTIFICADO DE MAESTRO ACUAPONISTA</h3>
-            <p style="font-size:0.9rem;">Otorgado por cultivar alimentos de manera sostenible y equilibrada.</p>
+<!-- TIENDA (MODAL) -->
+<div id="shop-modal" class="modal-overlay" onclick="if(event.target === this) closeShop()">
+    <div class="modal-sheet">
+        <h2 style="margin-top:0; color:var(--primary);">Tienda Acuapónica</h2>
+        <div class="shop-grid">
+            <div class="shop-item">
+                <div class="shop-icon">🐟</div>
+                <div class="shop-info">
+                    <h3>Más Peces</h3>
+                    <p>Producen más nutrientes (Amoníaco) para las plantas.</p>
+                </div>
+                <button class="btn-buy" onclick="buyUpgrade('fish')" id="buy-fish">$50</button>
+            </div>
+            <div class="shop-item">
+                <div class="shop-icon">🦠</div>
+                <div class="shop-info">
+                    <h3>Biofiltro Mejorado</h3>
+                    <p>Convierte el Amoníaco peligroso en comida más rápido.</p>
+                </div>
+                <button class="btn-buy" onclick="buyUpgrade('bio')" id="buy-bio">$100</button>
+            </div>
+            <div class="shop-item">
+                <div class="shop-icon">💡</div>
+                <div class="shop-info">
+                    <h3>Luces LED</h3>
+                    <p>Las plantas crecen un 50% más rápido.</p>
+                </div>
+                <button class="btn-buy" onclick="buyUpgrade('light')" id="buy-light">$200</button>
+            </div>
         </div>
-        <button class="btn-ai" style="margin: 0 auto; border-color:#009688; color:#009688;" onclick="location.reload()">Reiniciar Sistema</button>
+        <button onclick="closeShop()" style="width:100%; padding:15px; margin-top:20px; border:none; background:#eee; border-radius:10px; font-weight:bold;">Cerrar</button>
     </div>
 </div>
 
 <script>
-    /* CONFIGURACIÓN TUBERÍAS (Coordenadas SVG Dinámicas) */
-    function updatePipes() {
-        const svg = document.querySelector('.pipes-layer');
-        const rect = svg.getBoundingClientRect();
+    /* --- LÓGICA DEL JUEGO --- */
+    const GAME = {
+        money: 0,
+        level: 1,
+        
+        // Biología
+        fishCount: 3,
+        fishHealth: 100,
+        bacteriaLevel: 1, // Velocidad de conversión
+        plantGrowth: 0,   // 0 a 100%
+        growthRate: 0.5,  // Por tick
+        
+        // Química
+        ammonia: 0, // NH3 (Tóxico si > 10)
+        nitrates: 0, // Comida plantas
+        ph: 7.0,     // Ideal 6.8-7.2
+        
+        loop: null
+    };
 
-        const getCenter = (id) => {
-            const el = document.getElementById(id);
-            const r = el.getBoundingClientRect();
-            return { x: r.left + r.width/2 - rect.left, y: r.top + r.height/2 - rect.top };
-        };
+    const PRICES = { fish: 50, bio: 100, light: 200 };
 
-        const pPump = getCenter('slot-pump');
-        const pMech = getCenter('slot-mech');
-        const pBio = getCenter('slot-bio');
-        const pBed = getCenter('slot-bed');
-        const pTank = getCenter('slot-tank');
+    // Iniciar
+    init();
 
-        // 1. Bomba -> Mecánico (Sube y dobla)
-        setPath('path-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`);
-        setPath('flow-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`);
-
-        // 2. Mecánico -> Bio (Horizontal)
-        setPath('path-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`);
-        setPath('flow-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`);
-
-        // 3. Bio -> Cama (Horizontal)
-        setPath('path-3', `M ${pBio.x} ${pBio.y} H ${pBed.x}`);
-        setPath('flow-3', `M ${pBio.x} ${pBio.y} H ${pBed.x}`);
-
-        // 4. Cama -> Tanque (Sifón: Baja por la derecha y regresa al centro)
-        const bedOutX = pBed.x + 100; // Salida por la derecha de la cama
-        setPath('path-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 50} H ${pTank.x + 120} V ${pTank.y}`);
-        setPath('flow-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 50} H ${pTank.x + 120} V ${pTank.y}`);
+    function init() {
+        updateMoney(0);
+        renderFish();
+        GAME.loop = setInterval(tick, 500); // Game loop rápido (0.5s)
     }
 
-    function setPath(id, d) { document.getElementById(id).setAttribute('d', d); }
-    
-    window.addEventListener('resize', updatePipes);
-    setTimeout(updatePipes, 500); // Init inicial
+    function tick() {
+        // 1. Peces producen desechos (Amoníaco)
+        if (GAME.fishHealth > 0) {
+            GAME.ammonia += (GAME.fishCount * 0.1);
+        }
 
-    /* LÓGICA JUEGO Y DRAG & DROP */
-    const STATE = { built: {}, chem: { bacteria:0, ammonia:0, ph:7 }, life: { fish:0, plants:0 }, loop: null };
-    const draggables = document.querySelectorAll('.draggable-item');
-    const dropZones = document.querySelectorAll('.drop-zone');
+        // 2. Bacterias convierten (Biofiltro)
+        // Convierte amoníaco en nitratos (comida)
+        let conversion = GAME.bacteriaLevel * 0.5;
+        
+        // El pH afecta a las bacterias
+        if (GAME.ph < 6.0 || GAME.ph > 8.0) conversion = 0;
 
-    draggables.forEach(d => d.addEventListener('dragstart', e => {
-        if(!d.classList.contains('locked')) e.dataTransfer.setData('type', d.dataset.type);
-    }));
+        if (GAME.ammonia > 0) {
+            let amount = Math.min(GAME.ammonia, conversion);
+            GAME.ammonia -= amount;
+            GAME.nitrates += amount;
+            
+            // La conversión acidifica el agua (baja pH)
+            if (amount > 0) GAME.ph -= 0.01;
+        }
 
-    dropZones.forEach(z => {
-        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('hovered'); });
-        z.addEventListener('dragleave', e => { z.classList.remove('hovered'); });
-        z.addEventListener('drop', e => {
-            e.preventDefault(); z.classList.remove('hovered');
-            handleDrop(z, e.dataTransfer.getData('type'), e.clientX, e.clientY);
-        });
-    });
-
-    function handleDrop(zone, type, x, y) {
-        const accept = zone.dataset.accept.split(',');
-        if(!accept.includes(type)) return;
-
-        if(['tank','pump','mech','bio','bed'].includes(type)) {
-            if(!STATE.built[type]) {
-                STATE.built[type] = 1;
-                document.getElementById(`slot-${type}`).classList.add('filled');
-                document.getElementById(`obj-${type}`).classList.add('visible');
-                document.getElementById(`item-${type}`).style.opacity = '0.3';
-                document.getElementById(`item-${type}`).draggable = false;
-                showToast("Instalado", x, y, "#333");
-                if(Object.keys(STATE.built).length >= 5) updateInstruction("Arrastra las TUBERÍAS para conectar el sistema.");
-                setTimeout(updatePipes, 100);
-            }
-        }
-        else if(type === 'pipes') {
-            if(STATE.built.tank && STATE.built.pump && STATE.built.mech && STATE.built.bio && STATE.built.bed) {
-                STATE.built.pipes = 1;
-                document.getElementById('item-pipes').style.display='none';
-                document.getElementById('slot-pipes').classList.add('filled');
-                document.getElementById('slot-pipes').innerHTML = "";
-                document.querySelectorAll('.pipe-path').forEach(p => p.style.stroke = '#546e7a');
-                updateInstruction("Ahora añade AGUA para probar el sistema.");
-                showToast("Conectado", x, y, "#555");
-            } else showToast("Faltan componentes", x, y, "red");
-        }
-        else if(type === 'water') {
-            if(STATE.built.pipes) {
-                STATE.built.water = 1;
-                document.getElementById('water-tank').style.height = '80%';
-                document.getElementById('water-bed').style.height = '60%';
-                document.querySelectorAll('.pipe-water').forEach(p => p.style.opacity = 1);
-                document.getElementById('item-water').style.display='none';
-                document.getElementById('item-ammonia').classList.remove('locked');
-                updateInstruction("Añade AMONÍACO para iniciar el Ciclado.");
-                if(!STATE.loop) STATE.loop = setInterval(simLoop, 1000);
-            } else showToast("Faltan tuberías", x, y, "red");
-        }
-        // Lógica Biológica Simplificada
-        else if(type === 'ammonia') { STATE.chem.ammonia += 5; showToast("+5 Amoníaco", x, y, "brown"); }
-        else if(type === 'fish') { 
-            if(STATE.chem.bacteria > 80) { 
-                STATE.life.fish = 10; 
-                document.getElementById('item-fish').style.display='none';
-                document.getElementById('item-plants').classList.remove('locked');
-                addFishVisuals();
-                updateInstruction("Ahora planta las SEMILLAS.");
-            } else showToast("Agua tóxica", x, y, "red");
-        }
-        else if(type === 'plants') {
-            STATE.life.plants = 1;
-            document.getElementById('item-plants').style.display='none';
-            document.getElementById('item-food').classList.remove('locked');
-            document.getElementById('item-base').classList.remove('locked');
-            addPlantVisuals();
-            updateInstruction("Sistema Completo. Alimenta y cuida el pH.");
-        }
-        else if(type === 'food') { STATE.chem.ammonia += 2; showToast("Alimentado", x, y, "orange"); }
-        else if(type === 'base') { STATE.chem.ph += 0.5; showToast("pH +", x, y, "purple"); }
-    }
-
-    function simLoop() {
-        if(STATE.chem.ammonia > 0 && STATE.chem.bacteria < 100) {
-            STATE.chem.bacteria += 2; 
-            STATE.chem.ammonia -= 0.1;
-            if(STATE.chem.bacteria > 80) document.getElementById('item-fish').classList.remove('locked');
-        }
-        if(STATE.life.fish > 0) {
-            STATE.chem.ammonia += 0.1;
-            let clean = STATE.chem.ammonia * (STATE.chem.bacteria/100) * 0.5;
-            STATE.chem.ammonia -= clean;
-            if(clean > 0) STATE.chem.ph -= 0.002;
-        }
-        if(STATE.life.plants > 0 && STATE.chem.ph > 6) {
-            STATE.life.plants += 0.2;
-            if(STATE.life.plants >= 100) {
-                STATE.life.plants = 100;
-                showVictory();
-                clearInterval(STATE.loop);
-            }
+        // 3. Plantas crecen
+        if (GAME.nitrates > 0 && GAME.ph > 6.0 && GAME.ph < 7.5) {
+            GAME.plantGrowth += GAME.growthRate;
+            GAME.nitrates -= 0.1; // Consumen comida
         }
         
-        STATE.chem.ammonia = Math.max(0, STATE.chem.ammonia);
-        STATE.chem.ph = Math.max(4, Math.min(10, STATE.chem.ph));
+        // 4. Consecuencias (Daño)
+        if (GAME.ammonia > 10) {
+            GAME.fishHealth -= 2;
+            showFloater("⚠️ ¡Tóxico!", 50, 50, "red");
+        }
+        if (GAME.ph < 6.0 || GAME.ph > 8.0) {
+            GAME.fishHealth -= 1;
+        }
+
+        // Clamp y UI
+        if (GAME.plantGrowth > 100) GAME.plantGrowth = 100;
+        if (GAME.ammonia < 0) GAME.ammonia = 0;
+        if (GAME.nitrates < 0) GAME.nitrates = 0;
+        if (GAME.fishHealth <= 0 && GAME.fishCount > 0) killFish();
+
         updateUI();
     }
 
-    function updateUI() {
-        document.getElementById('stat-bac').innerText = Math.floor(STATE.chem.bacteria) + "%";
-        document.getElementById('stat-amm').innerText = STATE.chem.ammonia.toFixed(1);
-        document.getElementById('stat-ph').innerText = STATE.chem.ph.toFixed(1);
-        document.getElementById('stat-grow').innerText = Math.floor(STATE.life.plants) + "%";
+    /* --- ACCIONES DEL JUGADOR --- */
+
+    function feedFish() {
+        if (GAME.fishHealth <= 0) return;
         
-        if(STATE.chem.ammonia > 10) document.getElementById('water-tank').classList.add('dirty');
-        else document.getElementById('water-tank').classList.remove('dirty');
+        GAME.ammonia += 2; // La comida genera amoníaco
+        GAME.nitrates += 1;
         
-        if(STATE.life.plants > 0) {
-            let s = 10 + STATE.life.plants/2;
-            document.querySelectorAll('.plant-mob').forEach(p => p.style.fontSize = s+"px");
+        // Animación visual
+        showFloater("🦐 Ñam", Math.random()*80 + 10, 70, "orange");
+        
+        // Efecto peces
+        document.querySelectorAll('.fish').forEach(f => {
+            f.style.transform = "scale(1.2)";
+            setTimeout(() => f.style.transform = "scale(1)", 200);
+        });
+    }
+
+    function cleanTank() {
+        if (GAME.ammonia > 0) {
+            GAME.ammonia -= 5;
+            if (GAME.ammonia < 0) GAME.ammonia = 0;
+            showFloater("✨ Limpio", 50, 60, "#4fc3f7");
+        } else {
+            showFloater("Ya está limpio", 50, 60, "#aaa");
         }
     }
 
-    function addFishVisuals() {
-        const c = document.getElementById('fish-container');
-        for(let i=0; i<5; i++) {
-            let f = document.createElement('div'); f.className = 'fish-mob'; f.innerText='🐟';
-            f.style.left=Math.random()*80+'%'; f.style.top=Math.random()*80+'%';
-            c.appendChild(f);
-        }
-        setInterval(() => document.querySelectorAll('.fish-mob').forEach(f => {
-            f.style.left=Math.random()*80+'%'; f.style.transform=Math.random()>0.5?'scaleX(1)':'scaleX(-1)';
-        }), 2000);
+    function fixPH() {
+        GAME.ph += 0.5;
+        if (GAME.ph > 8.0) GAME.ph = 8.0; // Tope
+        showFloater("💊 pH Subiendo", 80, 60, "#e040fb");
     }
 
-    function addPlantVisuals() {
-        const c = document.getElementById('plants-container');
-        for(let i=0; i<4; i++) {
-            let p = document.createElement('div'); p.className='plant-mob'; p.innerText='🌱';
-            p.style.left=(20+i*20)+'%'; c.appendChild(p);
+    function harvest() {
+        if (GAME.plantGrowth >= 100) {
+            // Cosecha exitosa
+            let earnings = 20 * GAME.level;
+            updateMoney(earnings);
+            showFloater(`💰 +$${earnings}`, 50, 30, "gold");
+            
+            GAME.plantGrowth = 0; // Reiniciar plantas
+            
+            // Subir de nivel cada 5 cosechas (simplificado)
+            if (Math.random() > 0.7) {
+                GAME.level++;
+                showFloater("🏆 ¡NIVEL ARRIBA!", 50, 50, "gold");
+                document.getElementById('lvl').innerText = GAME.level;
+            }
+        } else {
+            showFloater("🌱 Aún no está lista", 50, 30, "#81c784");
         }
     }
 
-    function updateInstruction(t) { document.getElementById('instruction').innerText = t; }
+    /* --- SISTEMA DE TIENDA --- */
+    function openShop() {
+        document.getElementById('shop-modal').style.display = 'flex';
+        checkPrices();
+    }
+    function closeShop() {
+        document.getElementById('shop-modal').style.display = 'none';
+    }
+
+    function checkPrices() {
+        document.getElementById('buy-fish').disabled = GAME.money < PRICES.fish;
+        document.getElementById('buy-bio').disabled = GAME.money < PRICES.bio;
+        document.getElementById('buy-light').disabled = GAME.money < PRICES.light;
+    }
+
+    function buyUpgrade(type) {
+        if (GAME.money >= PRICES[type]) {
+            updateMoney(-PRICES[type]);
+            
+            if (type === 'fish') {
+                GAME.fishCount++;
+                renderFish();
+                PRICES.fish = Math.floor(PRICES.fish * 1.5);
+                document.getElementById('buy-fish').innerText = `$${PRICES.fish}`;
+            }
+            else if (type === 'bio') {
+                GAME.bacteriaLevel++;
+                PRICES.bio = Math.floor(PRICES.bio * 1.5);
+                document.getElementById('buy-bio').innerText = `$${PRICES.bio}`;
+            }
+            else if (type === 'light') {
+                GAME.growthRate += 0.2;
+                PRICES.light = Math.floor(PRICES.light * 1.5);
+                document.getElementById('buy-light').innerText = `$${PRICES.light}`;
+                document.getElementById('grow-rate').innerText = `x${(GAME.growthRate*2).toFixed(1)}`;
+            }
+            checkPrices();
+            closeShop();
+            showFloater("✅ ¡Mejora Comprada!", 50, 50, "#00c853");
+        }
+    }
+
+    /* --- VISUALES Y UI --- */
     
-    function showToast(m, x, y, c) {
-        let t = document.createElement('div'); t.innerText = m; t.className = 'floater';
-        t.style.left = x + 'px'; t.style.top = y + 'px'; t.style.color = c;
-        document.body.appendChild(t); setTimeout(() => t.remove(), 1500);
+    function updateMoney(amount) {
+        GAME.money += amount;
+        document.getElementById('money').innerText = GAME.money;
     }
 
-    function showVictory() {
-        document.getElementById('modal-victory').style.display = 'flex';
+    function updateUI() {
+        // Plantas (Tamaño)
+        let size = 10 + (GAME.plantGrowth * 0.4); // 10px a 50px
+        document.querySelectorAll('.plant').forEach(p => {
+            p.style.fontSize = `${size}px`;
+            p.innerText = GAME.plantGrowth >= 100 ? "🥬" : "🌱";
+        });
+
+        // Agua (Color)
+        const water = document.getElementById('water');
+        if (GAME.ammonia > 8) water.classList.add('water-dirty');
+        else water.classList.remove('water-dirty');
+
+        // Botones Alerta
+        const btnClean = document.getElementById('btn-clean');
+        if (GAME.ammonia > 5) btnClean.classList.add('danger');
+        else btnClean.classList.remove('danger');
+
+        const btnPh = document.getElementById('btn-ph');
+        if (GAME.ph < 6.0) btnPh.classList.add('danger');
+        else btnPh.classList.remove('danger');
+
+        // Valores Numéricos
+        document.getElementById('val-nh3').innerText = GAME.ammonia.toFixed(1);
+        document.getElementById('val-nh3').style.color = GAME.ammonia > 5 ? 'red' : '#333';
+        
+        document.getElementById('val-ph').innerText = GAME.ph.toFixed(1);
+        document.getElementById('val-ph').style.color = (GAME.ph < 6.0 || GAME.ph > 8.0) ? 'red' : '#333';
     }
 
-    function askAI(mode) {
-        document.getElementById('modal-ai').style.display = 'flex';
-        document.getElementById('ai-title').innerText = mode==='diagnosis'?'Diagnóstico':'Tip';
-        document.getElementById('ai-content').innerHTML = mode==='diagnosis' ? 
-            `pH: ${STATE.chem.ph.toFixed(1)}<br>Bacteria: ${Math.floor(STATE.chem.bacteria)}%<br><br>${STATE.chem.bacteria<100?'🚧 Ciclando...':'✅ Sistema Activo'}` : 
-            "💡 Las bacterias nitrosomonas convierten el amoníaco en nitritos.";
+    function renderFish() {
+        const container = document.getElementById('fish-container');
+        container.innerHTML = '';
+        for(let i=0; i<GAME.fishCount; i++) {
+            let f = document.createElement('div');
+            f.className = 'fish';
+            f.innerText = '🐟';
+            // Posición aleatoria
+            f.style.left = Math.random() * 80 + '%';
+            f.style.top = Math.random() * 80 + '%';
+            container.appendChild(f);
+        }
+        // Movimiento
+        moveFish();
     }
+
+    function moveFish() {
+        document.querySelectorAll('.fish').forEach(f => {
+            if (GAME.fishHealth <= 0) return; // No mover si muertos
+            f.style.left = Math.random() * 80 + '%';
+            f.style.top = Math.random() * 80 + '%';
+            f.style.transform = Math.random() > 0.5 ? "scaleX(1)" : "scaleX(-1)";
+        });
+        setTimeout(moveFish, 2000);
+    }
+
+    function killFish() {
+        document.querySelectorAll('.fish').forEach(f => {
+            f.classList.add('dead-fish');
+            f.innerText = '☠️';
+        });
+        showFloater("Tus peces han muerto", 50, 50, "red");
+        // Reset parcial para no frustrar
+        setTimeout(() => {
+            alert("GAME OVER: Tus peces murieron por mala calidad del agua. Se han comprado nuevos alevines automáticamente.");
+            GAME.fishHealth = 100;
+            GAME.ammonia = 0;
+            GAME.ph = 7.0;
+            renderFish();
+        }, 1000);
+    }
+
+    function showFloater(text, xPercent, yPercent, color) {
+        let f = document.createElement('div');
+        f.className = 'floater';
+        f.innerText = text;
+        f.style.left = xPercent + '%';
+        f.style.top = yPercent + '%';
+        f.style.color = color;
+        document.body.appendChild(f);
+        setTimeout(() => f.remove(), 1000);
+    }
+
 </script>
 </body>
 </html>
