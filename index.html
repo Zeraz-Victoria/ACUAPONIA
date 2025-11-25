@@ -3,497 +3,409 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Acuaponía Builder V17: Ultra Compacto</title>
+    <title>Acuaponía V19</title>
     <style>
-        /* ESTILOS GENERALES */
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #eceff1; color: #333; margin: 0; padding: 0; user-select: none; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        /* ESTILOS BASE */
+        body { font-family: 'Segoe UI', sans-serif; background: #eceff1; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; user-select: none; }
         
         /* HEADER */
-        header { background: #263238; color: white; padding: 0 10px; display: flex; justify-content: space-between; align-items: center; height: 40px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; }
-        h1 { font-size: 0.85rem; margin: 0; display: flex; align-items: center; gap: 5px; }
+        header { background: #263238; color: white; height: 45px; display: flex; align-items: center; padding: 0 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 100; justify-content: space-between; }
+        h1 { font-size: 0.9rem; margin: 0; }
+        .stats-bar { display: flex; gap: 8px; font-size: 0.7rem; }
+        .stat-item { background: #37474f; padding: 3px 6px; border-radius: 4px; color: #eee; }
         
-        .stats-bar { display: flex; gap: 8px; align-items: center; font-size: 0.65rem; overflow-x: auto; white-space: nowrap; padding-left: 5px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-        .stats-bar::-webkit-scrollbar { display: none; }
-        .stat-item { background: #37474f; padding: 2px 5px; border-radius: 3px; display: flex; align-items: center; gap: 3px; }
-        .stat-val { font-weight: bold; color: #4fc3f7; }
-        
-        .health-indicator { width: 6px; height: 6px; border-radius: 50%; background: #66bb6a; display: inline-block; }
-        .health-low { background: #ef5350; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        /* LAYOUT */
+        .main-layout { display: grid; grid-template-columns: 200px 1fr 300px; flex: 1; overflow: hidden; }
 
-        /* LAYOUT PRINCIPAL */
-        .main-layout { display: grid; grid-template-columns: 200px 1fr 300px; flex: 1; overflow: hidden; position: relative; transition: all 0.3s; }
+        /* INVENTARIO */
+        .inventory { background: white; border-right: 1px solid #ccc; padding: 10px; overflow-y: auto; z-index: 50; display: flex; flex-direction: column; gap: 5px; }
+        .inv-group { font-size: 0.7rem; font-weight: bold; color: #0277bd; margin-top: 5px; border-bottom: 1px solid #eee; text-transform: uppercase; }
         
-        /* 1. INVENTARIO */
-        .inventory { background: #fff; border-right: 1px solid #ddd; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; z-index: 10; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        .inv-section { font-weight: bold; color: #0277bd; margin-top: 5px; border-bottom: 1px solid #e1f5fe; padding-bottom: 1px; font-size: 0.7rem; text-transform: uppercase; }
-        
-        .draggable-item { 
-            background: #f5f5f5; border: 1px solid #ccc; border-radius: 4px; padding: 5px; 
-            cursor: grab; display: flex; align-items: center; gap: 6px; transition: all 0.2s; font-size: 0.75rem;
-            touch-action: none;
+        .drag-item { 
+            background: #f5f5f5; border: 1px solid #bbb; padding: 6px; border-radius: 4px; 
+            cursor: grab; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; 
+            transition: 0.2s; touch-action: none; 
         }
-        .draggable-item:hover { transform: translateX(2px); background: #e3f2fd; border-color: #2196f3; }
-        .draggable-item.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
-        .item-icon { font-size: 1rem; min-width: 18px; text-align: center; }
+        .drag-item:hover { background: #e1f5fe; border-color: #0288d1; transform: translateX(3px); }
+        .drag-item.locked { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+        .icon { font-size: 1.1rem; width: 20px; text-align: center; }
 
-        /* GHOST DRAG */
-        .drag-ghost {
-            position: fixed; pointer-events: none; z-index: 9999; opacity: 0.9;
-            background: white; padding: 5px 10px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            border: 2px solid #2196f3; transform: translate(-50%, -50%); font-size: 0.8rem; font-weight: bold;
-            display: flex; align-items: center; gap: 5px; white-space: nowrap;
+        .drag-ghost { 
+            position: fixed; background: rgba(255,255,255,0.9); border: 2px solid #0277bd; 
+            padding: 8px; border-radius: 8px; pointer-events: none; z-index: 9999; 
+            font-weight: bold; font-size: 0.8rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 5px; transform: translate(-50%, -50%);
         }
 
-        /* 2. ZONA DE CONSTRUCCIÓN */
-        .workspace { 
-            position: relative; background-image: radial-gradient(#cfd8dc 1px, transparent 1px); 
-            background-size: 20px 20px; background-color: #eceff1; overflow: hidden; 
-            display: flex; justify-content: center; align-items: center; 
+        /* ÁREA DE JUEGO */
+        .workspace { position: relative; background-image: radial-gradient(#b0bec5 1px, transparent 1px); background-size: 20px 20px; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        .board { position: relative; width: 800px; height: 600px; }
+
+        /* SVG Tuberías */
+        .pipes-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .pipe-line { fill: none; stroke: #cfd8dc; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.5s; }
+        .pipe-water { fill: none; stroke: #29b6f6; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 10; opacity: 0; animation: flow 1s linear infinite; transition: opacity 0.5s; }
+        @keyframes flow { to { stroke-dashoffset: -20; } }
+
+        /* Slots */
+        .slot { 
+            position: absolute; border: 2px dashed #90a4ae; background: rgba(255,255,255,0.5); 
+            border-radius: 8px; display: flex; justify-content: center; align-items: center; 
+            font-size: 0.7rem; color: #607d8b; text-align: center; transition: 0.2s; z-index: 2;
         }
+        .slot.hover { background: rgba(129, 199, 132, 0.5); border-color: #43a047; transform: scale(1.05); }
+        .slot.filled { border: none; background: transparent; box-shadow: none; }
         
-        /* Tablero escalable fijo 800x600 */
-        .game-board { 
-            position: relative; width: 800px; height: 600px; 
-            transform-origin: center center; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.05); border-radius: 20px;
-            background: rgba(255,255,255,0.3);
-        }
+        /* Coordenadas */
+        #s-tank { bottom: 50px; left: 50%; transform: translateX(-50%); width: 320px; height: 160px; z-index: 2; }
+        #s-bed { top: 50px; right: 50px; width: 260px; height: 120px; z-index: 2; }
+        #s-mech { top: 100px; left: 80px; width: 80px; height: 100px; z-index: 2; }
+        #s-bio { top: 100px; left: 180px; width: 80px; height: 100px; z-index: 2; }
+        #s-pump { bottom: 70px; left: calc(50% - 120px); width: 50px; height: 50px; z-index: 10; border-radius: 50%; }
+        #s-pipes { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 60px; z-index: 2; }
 
-        /* Instrucciones Flotantes */
-        .instruction-panel {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95); padding: 4px 12px; border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-weight: bold; color: #006064;
-            border: 1px solid #00bcd4; z-index: 50; text-align: center; width: auto; min-width: 200px; font-size: 0.75rem;
-            pointer-events: none; white-space: nowrap;
-        }
+        /* Objetos Visuales */
+        .obj { width: 100%; height: 100%; display: none; position: relative; }
+        .obj.active { display: block; animation: pop 0.3s; }
+        @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
 
-        /* 3. PANEL EDUCATIVO */
-        .edu-sidebar { background: white; border-left: 1px solid #ccc; overflow-y: auto; padding: 0; display: flex; flex-direction: column; }
-        .ai-control-panel { background: #f3e5f5; padding: 8px; border-bottom: 1px solid #e1bee7; position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; gap: 5px; }
-        .ai-buttons { display: flex; gap: 5px; }
-        .btn-ai { flex: 1; background: white; border: 1px solid #6200ea; color: #6200ea; padding: 5px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.7rem; }
-        .manual-content { padding: 10px; font-size: 0.75rem; line-height: 1.4; color: #444; }
-        .manual-content h2 { font-size: 0.85rem; color: #0277bd; border-bottom: 1px solid #b3e5fc; margin-top: 10px; margin-bottom: 5px; }
-        .highlight-box { background: #e0f2f1; padding: 5px; border-radius: 4px; border-left: 3px solid #009688; margin: 5px 0; font-size: 0.7rem; }
-
-        /* SVG TUBERÍAS */
-        .pipes-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-        .pipe-path { fill: none; stroke: #cfd8dc; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; transition: stroke 1s; }
-        .pipe-water { fill: none; stroke: #4fc3f7; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 8; animation: flow 1s linear infinite; opacity: 0; transition: opacity 1s; }
-        @keyframes flow { to { stroke-dashoffset: -16; } }
-
-        /* SLOTS (Zonas de caída) */
-        .drop-zone { 
-            position: absolute; border: 2px dashed #b0bec5; background: rgba(255,255,255,0.4); 
-            border-radius: 6px; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            color: #78909c; font-size: 0.65rem; text-align: center; transition: all 0.3s; z-index: 2;
-        }
-        .drop-zone.hovered { background: rgba(129, 199, 132, 0.6); border-color: #4caf50; transform: scale(1.05); }
-        .drop-zone.filled { border: none; background: transparent; }
-        .label-tag { position: absolute; bottom: -15px; width: 100%; text-align: center; background: #333; color: white; padding: 1px 0; font-size: 8px; border-radius: 2px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
-        .drop-zone.filled:hover .label-tag { opacity: 1; }
-
-        /* POSICIONES MÁS CENTRADAS */
-        #slot-tank { bottom: 80px; left: 50%; transform: translateX(-50%); width: 220px; height: 100px; }
-        #slot-bed { top: 80px; right: 150px; width: 160px; height: 80px; }
-        #slot-mech { top: 120px; left: 120px; width: 50px; height: 80px; }
-        #slot-bio { top: 120px; left: 200px; width: 50px; height: 80px; }
-        #slot-pump { bottom: 30px; left: calc(50% - 80px); width: 30px; height: 30px; z-index: 5; }
-        #slot-pipes { top: 55%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 40px; }
-
-        /* COMPONENTES VISUALES */
-        .object { width: 100%; height: 100%; position: relative; display: none; cursor: help; }
-        .object.visible { display: block; animation: popIn 0.4s ease-out; }
-        @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        .visual-tank { background: rgba(33, 150, 243, 0.1); border: 2px solid #1976d2; border-radius: 0 0 8px 8px; border-top: none; position: relative; overflow: hidden; }
-        .visual-bed { background: #795548; border: 2px solid #4e342e; border-radius: 4px; position: relative; overflow: hidden; }
-        .visual-mech { background: #bdbdbd; border: 2px solid #616161; border-radius: 3px 3px 8px 8px; display: flex; align-items: center; justify-content: center; }
-        .visual-mech::after { content: "🌀"; font-size: 16px; opacity: 0.5; }
-        .visual-bio { background: #4db6ac; border: 2px solid #00796b; border-radius: 3px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 1px; padding: 1px; }
-        .bio-ball { width: 6px; height: 6px; background: #004d40; border-radius: 50%; opacity: 0.3; }
-        .visual-pump { background: #263238; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
-
-        .water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: rgba(33, 150, 243, 0.5); transition: height 1.5s ease-in-out; }
-        .water-fill.dirty { background: rgba(141, 110, 99, 0.6); }
+        .v-tank { background: rgba(33, 150, 243, 0.15); border: 3px solid #1565c0; border-radius: 0 0 15px 15px; border-top: none; overflow: hidden; }
+        .v-bed { background: #8d6e63; border: 3px solid #5d4037; border-radius: 6px; overflow: hidden; }
+        .v-mech { background: #cfd8dc; border: 2px solid #78909c; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+        .v-bio { background: #80cbc4; border: 2px solid #00796b; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; justify-content: center; }
+        .v-pump { background: #263238; border-radius: 50%; border: 2px solid black; }
         
-        .fish-mob { position: absolute; font-size: 16px; transition: all 1s; pointer-events: none; }
-        .fish-dead { transform: rotate(180deg) !important; filter: grayscale(100%); transition: transform 0.5s; }
-        .plant-mob { position: absolute; bottom: 2px; font-size: 0px; transition: font-size 1s; transform-origin: bottom center; }
+        .bio-dot { width: 8px; height: 8px; background: #004d40; border-radius: 50%; opacity: 0.4; }
+        .water { position: absolute; bottom: 0; width: 100%; height: 0%; background: rgba(3, 169, 244, 0.5); transition: height 2s; }
+        .water.dirty { background: rgba(121, 85, 72, 0.7); }
+
+        .fish { position: absolute; font-size: 24px; transition: 1s; }
+        .plant { font-size: 0; transition: 1s; display: inline-block; width: 20%; }
+
+        .guide { 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(255,255,255,0.9); padding: 8px 20px; border-radius: 20px;
+            border: 2px solid #00bcd4; color: #006064; font-weight: bold; font-size: 0.9rem;
+            z-index: 20; white-space: nowrap;
+        }
 
         .floater { position: fixed; font-weight: bold; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 200; text-shadow: 0 0 3px white; font-size: 1rem; }
         @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-30px); } }
 
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-box { background: white; width: 85%; max-width: 350px; padding: 20px; border-radius: 10px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto; }
+        /* Panel Educativo */
+        .edu-panel { background: white; border-left: 1px solid #ccc; display: flex; flex-direction: column; overflow-y: auto; }
+        .ai-box { background: #f3e5f5; padding: 10px; }
+        .btn-ai { width: 100%; border: 1px solid #7e57c2; background: white; color: #673ab7; padding: 5px; margin-top: 5px; border-radius: 4px; font-weight: bold; }
+        .wiki { padding: 15px; font-size: 0.8rem; color: #444; }
+        .wiki h3 { color: #0277bd; margin: 10px 0 5px 0; border-bottom: 1px solid #eee; }
 
-        /* MEDIA QUERIES MÓVIL (VERTICAL) */
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; width: 85%; max-width: 350px; padding: 20px; border-radius: 10px; text-align: center; }
+
         @media (max-width: 900px) {
             .main-layout { grid-template-columns: 1fr; grid-template-rows: 1fr auto auto; }
-            
-            /* Área de Juego: Ocupa casi toda la pantalla */
-            .workspace { order: 1; height: 60vh; background-size: 15px 15px; }
-            
-            /* Inventario: Barra inferior compacta */
+            .workspace { order: 1; height: 55vh; }
             .inventory { 
-                order: 2; width: 100%; height: 80px; flex-direction: row; border-right: none; border-top: 2px solid #ccc;
-                overflow-x: auto; overflow-y: hidden; padding: 5px; gap: 5px; align-items: center;
-                background: #fafafa;
+                order: 2; width: 100%; height: 90px; flex-direction: row; 
+                overflow-x: auto; padding: 5px; gap: 8px; border-top: 2px solid #ddd;
             }
-            .inv-section { display: none; } 
-            .draggable-item { 
-                min-width: 60px; width: 60px; height: 60px;
-                flex-direction: column; justify-content: center; text-align: center; 
-                font-size: 0.6rem; padding: 2px; border-radius: 8px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .item-icon { font-size: 1.2rem; margin-bottom: 2px; }
-            
-            /* Panel Educativo: Oculto o muy pequeño abajo */
-            .edu-sidebar { order: 3; height: auto; max-height: 20vh; border-left: none; border-top: 1px solid #ccc; }
-            
-            /* Ajuste de escalado para centrar el tablero */
-            .game-board { margin: 0; }
+            .inv-group { display: none; }
+            .drag-item { flex-direction: column; min-width: 60px; height: 60px; justify-content: center; font-size: 0.6rem; text-align: center; }
+            .icon { font-size: 1.5rem; }
+            .edu-panel { order: 3; height: auto; max-height: 25vh; }
+            .board { transform-origin: top center; }
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🌱 Acuaponía <span style="color:#81d4fa;">V17</span></h1>
+    <h1>🌱 Acuaponía V19</h1>
     <div class="stats-bar">
-        <div class="stat-item"><div class="health-indicator" id="ind-health"></div> ❤️ <span id="stat-health">100%</span></div>
-        <div class="stat-item">🦠 <span id="stat-bac">0%</span></div>
-        <div class="stat-item">🧪 <span id="stat-amm">0</span></div>
-        <div class="stat-item">💧 <span id="stat-ph">7.0</span></div>
-        <div class="stat-item">🥬 <span id="stat-grow">0%</span></div>
+        <div class="stat-item">❤️ <span id="v-hp">100%</span></div>
+        <div class="stat-item">🦠 <span id="v-bac">0%</span></div>
+        <div class="stat-item">🧪 <span id="v-amm">0</span></div>
+        <div class="stat-item">💧 <span id="v-ph">7.0</span></div>
+        <div class="stat-item">🥬 <span id="v-grow">0%</span></div>
     </div>
 </header>
 
 <div class="main-layout">
-    <div class="inventory" id="inventory-panel">
-        <div class="inv-section">Estructura</div>
-        <div class="draggable-item" draggable="true" data-type="tank" id="item-tank"><span class="item-icon">🟦</span> Tanque</div>
-        <div class="draggable-item" draggable="true" data-type="pump" id="item-pump"><span class="item-icon">⚙️</span> Bomba</div>
-        <div class="draggable-item" draggable="true" data-type="mech" id="item-mech"><span class="item-icon">🗑️</span> Filtro</div>
-        <div class="draggable-item" draggable="true" data-type="bio" id="item-bio"><span class="item-icon">🦠</span> Biofiltro</div>
-        <div class="draggable-item" draggable="true" data-type="bed" id="item-bed"><span class="item-icon">🟫</span> Cama</div>
-        <div class="draggable-item" draggable="true" data-type="pipes" id="item-pipes"><span class="item-icon">🔧</span> Tubos</div>
-        <div class="draggable-item" draggable="true" data-type="water" id="item-water"><span class="item-icon">💧</span> Agua</div>
+    <div class="inventory">
+        <div class="inv-group">Estructura</div>
+        <div class="drag-item" data-id="tank"><span class="icon">🟦</span> Tanque</div>
+        <div class="drag-item" data-id="pump"><span class="icon">⚙️</span> Bomba</div>
+        <div class="drag-item" data-id="mech"><span class="icon">🗑️</span> Filtro</div>
+        <div class="drag-item" data-id="bio"><span class="icon">🦠</span> Biofiltro</div>
+        <div class="drag-item" data-id="bed"><span class="icon">🟫</span> Cama</div>
+        <div class="drag-item" data-id="pipes"><span class="icon">🔧</span> Tubos</div>
+        <div class="drag-item" data-id="water"><span class="icon">💧</span> Agua</div>
 
-        <div class="inv-section">Biología</div>
-        <div class="draggable-item locked" draggable="true" data-type="ammonia" id="item-ammonia"><span class="item-icon">🧪</span> NH3</div>
-        <div class="draggable-item locked" draggable="true" data-type="fish" id="item-fish"><span class="item-icon">🐟</span> Peces</div>
+        <div class="inv-group">Biología</div>
+        <div class="drag-item locked" id="btn-nh3" data-id="nh3"><span class="icon">🧪</span> NH3</div>
+        <div class="drag-item locked" id="btn-fish" data-id="fish"><span class="icon">🐟</span> Peces</div>
         
-        <div class="inv-section">Cultivos</div>
-        <div class="draggable-item locked" draggable="true" data-type="lettuce" id="item-lettuce"><span class="item-icon">🥬</span> Lechuga</div>
-        <div class="draggable-item locked" draggable="true" data-type="tomato" id="item-tomato"><span class="item-icon">🍅</span> Tomate</div>
-        <div class="draggable-item locked" draggable="true" data-type="berry" id="item-berry"><span class="item-icon">🍓</span> Fresa</div>
+        <div class="inv-group">Cultivo</div>
+        <div class="drag-item locked" id="btn-let" data-id="let"><span class="icon">🥬</span> Lechuga</div>
+        <div class="drag-item locked" id="btn-tom" data-id="tom"><span class="icon">🍅</span> Tomate</div>
         
-        <div class="inv-section">Cuidados</div>
-        <div class="draggable-item locked" draggable="true" data-type="food" id="item-food"><span class="item-icon">🦐</span> Comida</div>
-        <div class="draggable-item locked" draggable="true" data-type="base" id="item-base"><span class="item-icon">💊</span> pH+</div>
-        <div class="draggable-item locked" draggable="true" data-type="acid" id="item-acid"><span class="item-icon">🍋</span> pH-</div>
+        <div class="inv-group">Cuidado</div>
+        <div class="drag-item locked" id="btn-food" data-id="food"><span class="icon">🦐</span> Comida</div>
+        <div class="drag-item locked" id="btn-ph" data-id="ph"><span class="icon">💊</span> pH+</div>
     </div>
 
-    <div class="workspace" id="workspace">
-        <div class="instruction-panel" id="instruction">Arrastra el TANQUE al centro.</div>
-        
-        <div class="game-board" id="game-board">
-            <svg class="pipes-layer">
-                <path id="path-1" class="pipe-path" d="M0 0" /><path id="flow-1" class="pipe-water" d="M0 0" />
-                <path id="path-2" class="pipe-path" d="M0 0" /><path id="flow-2" class="pipe-water" d="M0 0" />
-                <path id="path-3" class="pipe-path" d="M0 0" /><path id="flow-3" class="pipe-water" d="M0 0" />
-                <path id="path-4" class="pipe-path" d="M0 0" /><path id="flow-4" class="pipe-water" d="M0 0" />
+    <div class="workspace" id="ws">
+        <div class="guide" id="msg">Arrastra el TANQUE al centro</div>
+        <div class="board" id="board">
+            <svg class="pipes-svg">
+                <path id="p1" class="pipe-line" d="" /><path id="f1" class="pipe-water" d="" />
+                <path id="p2" class="pipe-line" d="" /><path id="f2" class="pipe-water" d="" />
+                <path id="p3" class="pipe-line" d="" /><path id="f3" class="pipe-water" d="" />
+                <path id="p4" class="pipe-line" d="" /><path id="f4" class="pipe-water" d="" />
             </svg>
 
-            <div id="slot-tank" class="drop-zone" data-accept="tank,water,ammonia,fish,food,base,acid">📍<div class="object visual-tank" id="obj-tank"><div class="water-fill" id="water-tank"></div><div id="fish-container" style="position:absolute; inset:0;"></div><div class="label-tag">Tanque</div></div></div>
-            <div id="slot-pump" class="drop-zone" data-accept="pump">⚙️<div class="object visual-pump" id="obj-pump"><div class="label-tag">Bomba</div></div></div>
-            <div id="slot-mech" class="drop-zone" data-accept="mech">🗑️<div class="object visual-mech" id="obj-mech"><div class="label-tag">Filtro</div></div></div>
-            <div id="slot-bio" class="drop-zone" data-accept="bio">🦠<div class="object visual-bio" id="obj-bio"><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="label-tag">Bio</div></div></div>
-            <div id="slot-bed" class="drop-zone" data-accept="bed,lettuce,tomato,berry">🟫<div class="object visual-bed" id="obj-bed"><div class="water-fill" id="water-bed"></div><div id="plants-container" style="position:absolute; bottom:0; width:100%; text-align:center;"></div><div class="label-tag">Cama</div></div></div>
-            <div id="slot-pipes" class="drop-zone" data-accept="pipes">🔗<div class="object" id="obj-pipes" style="display:none;"></div></div>
+            <div id="s-tank" class="slot" data-accept="tank,water,nh3,fish,food,ph">📍 Tanque<div id="o-tank" class="obj v-tank"><div id="w-tank" class="water"></div><div id="c-fish" style="position:absolute;inset:0"></div></div></div>
+            <div id="s-pump" class="slot" data-accept="pump">⚙️<div id="o-pump" class="obj v-pump"></div></div>
+            <div id="s-mech" class="slot" data-accept="mech">🗑️<div id="o-mech" class="obj v-mech">Filtro</div></div>
+            <div id="s-bio" class="slot" data-accept="bio">🦠<div id="o-bio" class="obj v-bio"><div class="bio-dot"></div><div class="bio-dot"></div><div class="bio-dot"></div><div class="bio-dot"></div></div></div>
+            <div id="s-bed" class="slot" data-accept="bed,let,tom">🟫 Cama<div id="o-bed" class="obj v-bed"><div id="w-bed" class="water"></div><div id="c-plant" style="position:absolute;bottom:5px;width:100%;text-align:center"></div></div></div>
+            <div id="s-pipes" class="slot" data-accept="pipes">🔗<div id="o-pipes" class="obj"></div></div>
         </div>
     </div>
 
-    <div class="edu-sidebar">
-        <div class="ai-control-panel">
-            <div class="ai-buttons">
-                <button class="btn-ai" onclick="askAI('diagnosis')">🔍 Diagnóstico</button>
-                <button class="btn-ai" onclick="askAI('tips')">💡 Tip</button>
-            </div>
+    <div class="edu-panel">
+        <div class="ai-box">
+            <b style="color:#673ab7">ASISTENTE</b>
+            <button class="btn-ai" onclick="askAI()">🔍 Diagnóstico</button>
         </div>
-        <div class="manual-content">
-            <h2>FUNDAMENTOS</h2>
-            <p>Sistema simbiótico: Peces ➔ Bacterias ➔ Plantas.</p>
-            <h2>PARÁMETROS</h2>
-            <div class="highlight-box">🌡️ 20-28°C | 🧪 pH 6.8-7.2 | ☠️ NH3 < 1</div>
-            <p>Vigila el agua turbia y el pH bajo.</p>
+        <div class="wiki">
+            <h3>PASO 1: ESTRUCTURA</h3>
+            <p>Monta el tanque, bomba, filtros y cama. Conéctalos con tubos.</p>
+            <h3>PASO 2: CICLADO</h3>
+            <p>Usa Amoníaco (NH3) para crear bacterias en el biofiltro.</p>
+            <h3>PASO 3: VIDA</h3>
+            <p>Añade peces y plantas. Mantén el pH entre 6.8 y 7.2.</p>
         </div>
     </div>
 </div>
 
-<div id="modal-ai" class="modal-overlay">
-    <div class="modal-box">
-        <h2 style="color:#6200ea;" id="ai-title">IA</h2>
-        <div id="ai-content">...</div>
-        <button class="btn-ai" style="margin-top:15px; width:auto;" onclick="document.getElementById('modal-ai').style.display='none'">Cerrar</button>
-    </div>
-</div>
-
-<div id="modal-victory" class="modal-overlay">
-    <div class="modal-box" style="border: 3px solid gold;">
-        <h1 style="color:gold; font-size: 2rem; margin:0;">🏆</h1>
-        <h2 style="color:#006064;">¡COSECHA!</h2>
-        <p>Ciclo completado con éxito.</p>
-        <div style="margin: 10px; padding: 10px; border: 2px dashed #00bcd4; background: #e0f7fa; border-radius: 10px;">
-            <h3 style="margin-top:0;">CERTIFICADO</h3>
-            <p style="font-size:0.8rem;">Maestro Acuaponista</p>
-        </div>
-        <button class="btn-ai" style="margin:0 auto;" onclick="location.reload()">Reiniciar</button>
-    </div>
-</div>
-
-<div id="modal-gameover" class="modal-overlay">
-    <div class="modal-box" style="border: 3px solid #ef5350;">
-        <h1 style="font-size: 2rem; margin:0;">☠️</h1>
-        <h2 style="color:#c62828;">Game Over</h2>
-        <p id="death-reason">Peces muertos.</p>
-        <button class="btn-ai" style="margin: 10px auto; background:#ef5350; color:white;" onclick="location.reload()">Reintentar</button>
-    </div>
-</div>
+<div id="modal" class="modal-overlay"><div class="modal-box"><h2 id="m-title"></h2><p id="m-body"></p><button class="btn-ai" onclick="closeModal()">Cerrar</button></div></div>
 
 <script>
-    function resizeBoard() {
-        const board = document.getElementById('game-board');
-        const container = document.getElementById('workspace');
-        
-        // Cálculo inteligente de escala
-        const targetWidth = 820;
-        const targetHeight = 620;
-        const availableWidth = container.clientWidth;
-        const availableHeight = container.clientHeight;
-        
-        // Escalar para ajustar, dejando un pequeño margen (0.95)
-        const scale = Math.min(availableWidth / targetWidth, availableHeight / targetHeight) * 0.95;
-        
+    /* LOGICA BASE */
+    const S = { built: {}, chem: { bac:0, nh3:0, ph:7 }, life: { fish:0, hp:100, plants:0, type:null }, loop: null, gameOver: false };
+    
+    function fitBoard() {
+        const board = document.getElementById('board');
+        const ws = document.getElementById('ws');
+        const scale = Math.min(ws.clientWidth / 820, ws.clientHeight / 620);
         board.style.transform = `scale(${scale})`;
     }
-    window.addEventListener('resize', () => { resizeBoard(); updatePipes(); });
-    setTimeout(resizeBoard, 100);
+    window.addEventListener('resize', () => { fitBoard(); drawPipes(); });
+    setTimeout(fitBoard, 100);
 
-    function updatePipes() {
-        // Coordenadas ajustadas a las nuevas posiciones más centradas
-        const pPump = {x: 310, y: 565}; 
-        const pMech = {x: 135, y: 165}; // slot-mech top 120 + height 80/2 = 160
-        const pBio = {x: 215, y: 165};  // slot-bio top 120 + height 80/2 = 160
-        const pBed = {x: 560, y: 125};  // slot-bed top 80 + height 80/2 = 120. right 150 -> 800-150-160 = 490 start. Center 490+80 = 570.
-        const pTank = {x: 400, y: 505};
+    function drawPipes() {
+        const pos = (id) => {
+            const el = document.getElementById(id);
+            return { x: el.offsetLeft + el.offsetWidth/2, y: el.offsetTop + el.offsetHeight/2, w: el.offsetWidth, h: el.offsetHeight, l: el.offsetLeft, t: el.offsetTop };
+        };
+        const pump = pos('s-pump'), mech = pos('s-mech'), bio = pos('s-bio'), bed = pos('s-bed'), tank = pos('s-tank');
+        const line = (id, d) => { document.getElementById('p'+id).setAttribute('d', d); document.getElementById('f'+id).setAttribute('d', d); };
 
-        setPath('path-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`); setPath('flow-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`);
-        setPath('path-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`); setPath('flow-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`);
-        setPath('path-3', `M ${pBio.x} ${pBio.y} H ${pBed.x}`); setPath('flow-3', `M ${pBio.x} ${pBio.y} H ${pBed.x}`);
-        const bedOutX = pBed.x + 70;
-        setPath('path-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 55} H ${pTank.x + 80} V ${pTank.y}`); setPath('flow-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 55} H ${pTank.x + 80} V ${pTank.y}`);
+        line(1, `M ${pump.x} ${pump.y} V ${mech.y} H ${mech.l}`);
+        line(2, `M ${mech.l + mech.w} ${mech.y} H ${bio.l}`);
+        line(3, `M ${bio.l + bio.w} ${bio.y} H ${bed.l}`);
+        line(4, `M ${bed.l + bed.w - 30} ${bed.t + bed.h} V ${tank.t + 20}`);
     }
-    function setPath(id, d) { document.getElementById(id).setAttribute('d', d); }
-    setTimeout(updatePipes, 500);
+    setTimeout(drawPipes, 500);
 
-    const STATE = { built: {}, chem: { bacteria:0, ammonia:0, ph:7 }, life: { fish:0, health:100, plants:0, plantType:null }, loop: null, gameOver:false };
-    const PLANT_DATA = { lettuce: { name: "Lechuga", growthRate: 0.3, icon: "🥬" }, tomato: { name: "Tomate", growthRate: 0.15, icon: "🍅" }, berry: { name: "Fresa", growthRate: 0.1, icon: "🍓" } };
+    /* INTERACCIÓN */
+    let dragItem = null;
+    let ghost = null;
 
-    const draggables = document.querySelectorAll('.draggable-item');
-    const dropZones = document.querySelectorAll('.drop-zone');
-
-    draggables.forEach(d => d.addEventListener('dragstart', e => { if(!d.classList.contains('locked')) e.dataTransfer.setData('type', d.dataset.type); }));
-    dropZones.forEach(z => {
-        z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('hovered'); });
-        z.addEventListener('dragleave', e => { z.classList.remove('hovered'); });
-        z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('hovered'); handleAction(z, e.dataTransfer.getData('type'), e.clientX, e.clientY); });
-    });
-
-    let activeTouchItem = null;
-    let ghostEl = null;
-    draggables.forEach(d => {
+    document.querySelectorAll('.drag-item').forEach(d => {
+        // MOUSE
+        d.addEventListener('dragstart', e => { if(!d.classList.contains('locked')) e.dataTransfer.setData('id', d.dataset.id); });
+        // TOUCH
         d.addEventListener('touchstart', e => {
             if(d.classList.contains('locked')) return;
-            e.preventDefault(); activeTouchItem = d;
-            ghostEl = d.cloneNode(true); ghostEl.classList.add('drag-ghost'); document.body.appendChild(ghostEl);
+            e.preventDefault(); dragItem = d;
+            ghost = d.cloneNode(true); ghost.className='drag-ghost'; document.body.appendChild(ghost);
             moveGhost(e.touches[0]);
         });
-        d.addEventListener('touchmove', e => { if(!activeTouchItem) return; e.preventDefault(); moveGhost(e.touches[0]); });
+        d.addEventListener('touchmove', e => { if(dragItem) { e.preventDefault(); moveGhost(e.touches[0]); } });
         d.addEventListener('touchend', e => {
-            if(!activeTouchItem) return;
-            const touch = e.changedTouches[0];
-            ghostEl.style.display = 'none';
-            const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-            ghostEl.style.display = 'flex';
-            const zone = elemBelow ? elemBelow.closest('.drop-zone') : null;
-            if(zone) { handleAction(zone, activeTouchItem.dataset.type, touch.clientX, touch.clientY); zone.classList.remove('hovered'); }
-            if(ghostEl) ghostEl.remove(); activeTouchItem = null; ghostEl = null;
+            if(dragItem) {
+                const t = e.changedTouches[0]; ghost.style.display='none';
+                const el = document.elementFromPoint(t.clientX, t.clientY);
+                const slot = el ? el.closest('.slot') : null;
+                if(slot) action(slot, dragItem.dataset.id, t.clientX, t.clientY);
+                ghost.remove(); dragItem = null; ghost = null;
+            }
         });
     });
-    function moveGhost(touch) { if(ghostEl) { ghostEl.style.left = touch.clientX + 'px'; ghostEl.style.top = touch.clientY + 'px'; } }
 
-    function handleAction(zone, type, x, y) {
-        if(STATE.gameOver) return;
-        const accept = zone.dataset.accept.split(',');
-        if(!accept.includes(type)) return;
+    function moveGhost(t) { ghost.style.left = t.clientX+'px'; ghost.style.top = t.clientY+'px'; }
 
-        // Función para borrar ítem del inventario
-        const removeItem = () => {
-            const el = document.getElementById(`item-${type}`);
-            if(el) el.style.display = 'none';
-        };
+    document.querySelectorAll('.slot').forEach(s => {
+        s.addEventListener('dragover', e => { e.preventDefault(); s.classList.add('hover'); });
+        s.addEventListener('dragleave', e => s.classList.remove('hover'));
+        s.addEventListener('drop', e => {
+            e.preventDefault(); s.classList.remove('hover');
+            action(s, e.dataTransfer.getData('id'), e.clientX, e.clientY);
+        });
+    });
 
+    /* ACCIONES */
+    function action(slot, type, x, y) {
+        if(S.gameOver) return;
+        const accepts = slot.dataset.accept.split(',');
+        if(!accepts.includes(type)) return;
+
+        const removeItem = () => { const el=document.querySelector(`[data-id="${type}"]`); if(el) el.style.display='none'; };
+
+        // Construcción
         if(['tank','pump','mech','bio','bed'].includes(type)) {
-            if(!STATE.built[type]) {
-                STATE.built[type] = 1;
-                document.getElementById(`slot-${type}`).classList.add('filled');
-                document.getElementById(`obj-${type}`).classList.add('visible');
-                removeItem(); // Desaparecer del inventario
-                if(Object.keys(STATE.built).length >= 5) updateInstruction("Arrastra las TUBERÍAS para conectar.");
-                setTimeout(updatePipes, 100);
-            }
+            if(S.built[type]) return;
+            S.built[type] = true;
+            slot.classList.add('filled');
+            document.getElementById('o-'+type).classList.add('active');
+            removeItem();
+            if(Object.keys(S.built).length >= 5) msg("Arrastra TUBOS para conectar.");
+            setTimeout(drawPipes, 100);
         }
         else if(type === 'pipes') {
-            if(Object.keys(STATE.built).length >= 5) {
-                STATE.built.pipes = 1;
+            if(Object.keys(S.built).length >= 5) {
+                S.built.pipes = true;
                 document.getElementById('slot-pipes').classList.add('filled');
                 document.getElementById('slot-pipes').innerHTML = "";
-                document.querySelectorAll('.pipe-path').forEach(p => p.style.stroke = '#546e7a');
-                removeItem(); // Desaparecer
-                updateInstruction("Llenar AGUA");
-            } else showToast("Faltan piezas", x, y, "red");
+                document.querySelectorAll('.pipe-line').forEach(p => p.style.stroke = '#607d8b');
+                removeItem();
+                msg("¡Bien! Añade AGUA.");
+            } else toast("Falta estructura", x, y, "red");
         }
         else if(type === 'water') {
-            if(STATE.built.pipes) {
-                STATE.built.water = 1;
-                document.getElementById('water-tank').style.height = '80%';
-                document.getElementById('water-bed').style.height = '60%';
+            if(S.built.pipes) {
+                S.built.water = true;
+                document.getElementById('w-tank').style.height = '80%';
+                document.getElementById('w-bed').style.height = '60%';
                 document.querySelectorAll('.pipe-water').forEach(p => p.style.opacity = 1);
-                removeItem(); // Desaparecer
-                document.getElementById('item-ammonia').classList.remove('locked');
-                updateInstruction("Añade AMONÍACO");
-                if(!STATE.loop) STATE.loop = setInterval(simLoop, 1000);
-            } else showToast("Faltan tubos", x, y, "red");
+                removeItem();
+                unlock('nh3');
+                msg("Añade NH3 para bacterias.");
+                if(!S.loop) S.loop = setInterval(sim, 1000);
+            } else toast("Faltan tubos", x, y, "red");
         }
-        else if(type === 'ammonia') { STATE.chem.ammonia += 5; showToast("+5 NH3", x, y, "brown"); removeItem(); }
+        // Vida
+        else if(type === 'nh3') { S.chem.nh3 += 5; toast("+5 NH3", x, y, "brown"); removeItem(); }
         else if(type === 'fish') {
-            if(STATE.chem.bacteria > 80) {
-                STATE.life.fish = 10; removeItem();
-                unlock('lettuce'); unlock('tomato'); unlock('berry');
-                addFishVisuals();
-                updateInstruction("Siembra SEMILLAS");
-            } else showToast("Agua tóxica", x, y, "red");
+            if(S.chem.bac > 80) {
+                S.life.fish = 10; removeItem();
+                unlock('let'); unlock('tom');
+                spawnFish();
+                msg("Siembra plantas.");
+            } else toast("Agua tóxica", x, y, "red");
         }
-        else if(['lettuce','tomato','berry'].includes(type)) {
-            STATE.life.plants = 1; STATE.life.plantType = type;
-            document.getElementById('item-lettuce').parentElement.style.display='none'; // Ocultar sección completa
-            unlock('food'); unlock('base'); unlock('acid');
-            addPlantVisuals(type);
-            updateInstruction(`Cultivando ${PLANT_DATA[type].name}. Cuida pH y Peces.`);
+        else if(type === 'let' || type === 'tom') {
+            S.life.plants = 1; S.life.type = type;
+            removeItem();
+            unlock('food'); unlock('ph');
+            spawnPlants(type);
+            msg("Cuida pH y Peces.");
         }
-        else if(type === 'food') { STATE.chem.ammonia += 2; showToast("Ñam", x, y, "orange"); }
-        else if(type === 'base') { STATE.chem.ph += 0.5; showToast("pH +", x, y, "purple"); }
-        else if(type === 'acid') { STATE.chem.ph -= 0.5; showToast("pH -", x, y, "orange"); }
+        else if(type === 'food') { S.chem.nh3 += 2; S.life.hp = Math.min(100, S.life.hp + 5); toast("Ñam", x, y, "orange"); }
+        else if(type === 'ph') { S.chem.ph += 0.5; toast("pH +", x, y, "purple"); }
     }
 
-    function simLoop() {
-        if(STATE.gameOver) return;
-        if(STATE.chem.ammonia > 0 && STATE.chem.bacteria < 100) {
-            STATE.chem.bacteria += 2.0; STATE.chem.ammonia -= 0.1;
-            if(STATE.chem.bacteria > 80) unlock('fish');
+    function sim() {
+        if(S.gameOver) return;
+        // Ciclado
+        if(S.chem.nh3 > 0 && S.chem.bac < 100) {
+            S.chem.bac += 5; S.chem.nh3 -= 0.2;
+            if(S.chem.bac > 80) unlock('fish');
         }
-        if(STATE.life.fish > 0) {
-            STATE.chem.ammonia += 0.1; 
-            if(STATE.chem.ammonia > 5 || STATE.chem.ph < 6.0 || STATE.chem.ph > 8.0) STATE.life.health -= 2;
-            else if(STATE.life.health < 100) STATE.life.health += 0.5;
-            if(STATE.life.health <= 0) { triggerGameOver(STATE.chem.ammonia > 5 ? "Intoxicación" : "pH Letal"); return; }
-            let clean = STATE.chem.ammonia * (STATE.chem.bacteria/100) * 0.5;
-            STATE.chem.ammonia -= clean;
-            if(clean > 0) STATE.chem.ph -= 0.002;
+        // Vida
+        if(S.life.fish > 0) {
+            S.chem.nh3 += 0.1;
+            let clean = S.chem.nh3 * (S.chem.bac/100);
+            S.chem.nh3 -= clean;
+            if(clean > 0) S.chem.ph -= 0.01;
+            
+            if(S.chem.nh3 > 5 || S.chem.ph < 6) S.life.hp -= 5;
+            if(S.life.hp <= 0) end("Peces muertos. Cuida el agua.");
         }
-        if(STATE.life.plants > 0 && STATE.life.plantType) {
-            if(STATE.chem.ph > 6 && STATE.chem.ph < 7.5 && STATE.life.health > 50) {
-                STATE.life.plants += PLANT_DATA[STATE.life.plantType].growthRate;
-            }
-            if(STATE.life.plants >= 100) {
-                STATE.life.plants = 100; document.getElementById('modal-victory').style.display = 'flex'; STATE.gameOver = true;
-            }
+        // Crecimiento
+        if(S.life.plants > 0 && S.chem.ph > 6) {
+            S.life.plants += 0.5;
+            if(S.life.plants >= 100) end("¡VICTORIA! Cosecha lista.", true);
         }
-        STATE.chem.ammonia = Math.max(0, STATE.chem.ammonia);
-        updateUI();
+        S.chem.nh3 = Math.max(0, S.chem.nh3);
+        ui();
     }
 
-    function updateUI() {
-        document.getElementById('stat-bac').innerText = Math.floor(STATE.chem.bacteria) + "%";
-        document.getElementById('stat-amm').innerText = STATE.chem.ammonia.toFixed(1);
-        document.getElementById('stat-ph').innerText = STATE.chem.ph.toFixed(1);
-        document.getElementById('stat-grow').innerText = Math.floor(STATE.life.plants) + "%";
-        document.getElementById('stat-health').innerText = Math.floor(STATE.life.health) + "%";
-        let ind = document.getElementById('ind-health');
-        if(STATE.life.health < 50) ind.classList.add('health-low'); else ind.classList.remove('health-low');
-        if(STATE.chem.ammonia > 10) document.getElementById('water-tank').classList.add('dirty'); else document.getElementById('water-tank').classList.remove('dirty');
-        if(STATE.life.plants > 0) {
-            let size = 10 + STATE.life.plants/2;
-            let icon = PLANT_DATA[STATE.life.plantType].icon;
-            document.querySelectorAll('.plant-mob').forEach(p => { p.style.fontSize = size+"px"; p.innerText = icon; });
+    function ui() {
+        document.getElementById('v-hp').innerText = Math.floor(S.life.hp)+'%';
+        document.getElementById('v-bac').innerText = Math.floor(S.chem.bac)+'%';
+        document.getElementById('v-amm').innerText = S.chem.nh3.toFixed(1);
+        document.getElementById('v-ph').innerText = S.chem.ph.toFixed(1);
+        document.getElementById('v-grow').innerText = Math.floor(S.life.plants)+'%';
+        
+        if(S.chem.nh3 > 10) document.getElementById('w-tank').classList.add('dirty'); 
+        else document.getElementById('w-tank').classList.remove('dirty');
+
+        if(S.life.plants > 0) {
+            let s = 10 + S.life.plants/3;
+            document.querySelectorAll('.plant').forEach(p => p.style.fontSize = s+'px');
         }
     }
 
-    function addFishVisuals() {
-        const c = document.getElementById('fish-container');
+    function spawnFish() {
+        const c = document.getElementById('c-fish');
         for(let i=0; i<5; i++) {
-            let f = document.createElement('div'); f.className = 'fish-mob'; f.innerText='🐟';
-            f.style.left=Math.random()*80+'%'; f.style.top=Math.random()*80+'%'; c.appendChild(f);
+            let f = document.createElement('div'); f.className='fish'; f.innerText='🐟';
+            f.style.left=Math.random()*80+'%'; f.style.top=Math.random()*80+'%';
+            c.appendChild(f);
         }
-        setInterval(() => {
-            if(STATE.life.health > 0) document.querySelectorAll('.fish-mob').forEach(f => {
-                f.style.left=Math.random()*80+'%'; f.style.transform=Math.random()>0.5?'scaleX(1)':'scaleX(-1)';
-            });
-        }, 2000);
     }
-
-    function addPlantVisuals(type) {
-        const c = document.getElementById('plants-container');
-        let icon = PLANT_DATA[type].icon;
+    function spawnPlants(type) {
+        const c = document.getElementById('c-plant');
+        let icon = type==='let' ? '🥬' : '🍅';
         for(let i=0; i<4; i++) {
-            let p = document.createElement('div'); p.className='plant-mob'; p.innerText=icon;
-            p.style.left=(20+i*20)+'%'; c.appendChild(p);
+            let p = document.createElement('div'); p.className='plant'; p.innerText=icon;
+            c.appendChild(p);
         }
     }
 
-    function triggerGameOver(reason) {
-        STATE.gameOver = true;
-        document.getElementById('death-reason').innerText = "Causa: " + reason;
-        document.getElementById('modal-gameover').style.display = 'flex';
-        document.querySelectorAll('.fish-mob').forEach(f => f.classList.add('fish-dead'));
-    }
-
-    function updateInstruction(t) { document.getElementById('instruction').innerText = t; }
-    function unlock(id) { document.getElementById('item-'+id).classList.remove('locked'); }
-    function showToast(m, x, y, c) {
-        let t = document.createElement('div'); t.innerText = m; t.className = 'floater';
-        t.style.left = x + 'px'; t.style.top = y + 'px'; t.style.color = c;
+    function msg(t) { document.getElementById('msg').innerText = t; }
+    function unlock(id) { document.querySelector(`[data-id="${id}"]`).classList.remove('locked'); }
+    
+    function toast(text, x, y, color) {
+        let t = document.createElement('div'); t.innerText = text; t.className = 'floater';
+        t.style.left = x+'px'; t.style.top = y+'px'; t.style.color = color;
         document.body.appendChild(t); setTimeout(() => t.remove(), 1500);
     }
 
-    function askAI(mode) {
-        document.getElementById('modal-ai').style.display = 'flex';
-        document.getElementById('ai-title').innerText = mode==='diagnosis'?'Diagnóstico':'Tip';
-        let msg = "";
-        if(mode === 'diagnosis') {
-            msg = `<b>Salud: ${Math.floor(STATE.life.health)}%</b><br>pH: ${STATE.chem.ph.toFixed(1)} | NH3: ${STATE.chem.ammonia.toFixed(1)}<br><br>`;
-            if(STATE.life.health < 50) msg += "⚠️ <b>CRÍTICO:</b> Peces muriendo. Revisa pH y Amoníaco.";
-            else if(STATE.chem.ammonia > 4) msg += "⚠️ <b>ALERTA:</b> Amoníaco subiendo. Deja de alimentar.";
-            else msg += "✅ Sistema Estable.";
-        } else {
-            msg = "💡 <b>Tip:</b> Las bacterias necesitan oscuridad. Evita que la luz solar dé directo al biofiltro.";
-        }
-        document.getElementById('ai-content').innerHTML = msg;
+    function end(txt, win=false) {
+        S.gameOver = true;
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('m-title').innerText = win ? "🏆 ¡GANASTE!" : "☠️ FIN DEL JUEGO";
+        document.getElementById('m-body').innerText = txt;
+        document.getElementById('m-title').style.color = win ? 'gold' : 'red';
+    }
+
+    function closeModal() { location.reload(); }
+
+    function askAI() {
+        document.getElementById('modal').style.display = 'flex';
+        document.getElementById('m-title').innerText = "Diagnóstico IA";
+        document.getElementById('m-title').style.color = "#6200ea";
+        let txt = `pH: ${S.chem.ph.toFixed(1)} | NH3: ${S.chem.nh3.toFixed(1)}<br>`;
+        if(S.life.hp < 50) txt += "⚠️ CRÍTICO: Sube el pH y deja de alimentar.";
+        else if(S.chem.bac < 100) txt += "🚧 Ciclando: Espera a que las bacterias crezcan.";
+        else txt += "✅ Sistema Estable. Buen trabajo.";
+        document.getElementById('m-body').innerHTML = txt;
+        document.querySelector('.modal-box button').onclick = () => document.getElementById('modal').style.display='none';
     }
 </script>
 </body>
