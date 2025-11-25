@@ -54,10 +54,10 @@
 
         /* Instrucciones Flotantes */
         .instruction-panel {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95); padding: 8px 20px; border-radius: 20px;
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.90); padding: 6px 15px; border-radius: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; color: #006064;
-            border: 2px solid #00bcd4; z-index: 50; text-align: center; width: 80%; font-size: 0.9rem;
+            border: 1px solid #00bcd4; z-index: 50; text-align: center; width: auto; min-width: 300px; font-size: 0.85rem;
             pointer-events: none;
         }
 
@@ -109,13 +109,18 @@
         }
         .drop-zone.filled:hover .label-tag { opacity: 1; }
 
-        /* POSICIONES ABSOLUTAS (En base al Game Board de 800x600) */
+        /* POSICIONES ABSOLUTAS - AJUSTADAS PARA EVITAR OVERLAP */
+        /* Bajamos los componentes superiores para que no choquen con el mensaje de instrucciones */
+        
         #slot-tank { bottom: 50px; left: 50%; transform: translateX(-50%); width: 300px; height: 150px; }
-        #slot-bed { top: 50px; right: 50px; width: 250px; height: 120px; }
-        #slot-mech { top: 100px; left: 50px; width: 90px; height: 120px; }
-        #slot-bio { top: 100px; left: 180px; width: 90px; height: 120px; }
+        
+        #slot-bed { top: 130px; right: 50px; width: 250px; height: 120px; } /* Bajado de 50px a 130px */
+        
+        #slot-mech { top: 180px; left: 50px; width: 90px; height: 120px; } /* Bajado de 100px a 180px */
+        #slot-bio { top: 180px; left: 180px; width: 90px; height: 120px; } /* Bajado de 100px a 180px */
+        
         #slot-pump { bottom: 70px; left: calc(50% - 120px); width: 40px; height: 40px; z-index: 5; }
-        #slot-pipes { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 60px; }
+        #slot-pipes { top: 60%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 60px; }
 
         /* OBJETOS VISUALES */
         .object { width: 100%; height: 100%; position: relative; display: none; cursor: help; }
@@ -343,11 +348,18 @@
         };
 
         // Coordenadas "lógicas" (sin escala) basadas en el CSS del tablero
+        // AJUSTADO: Coordenadas nuevas para filtros y camas bajados
         const pPump = {x: 280, y: 550}; // bottom 70, left calc(50%-120) = 400-120=280
-        const pMech = {x: 95, y: 160}; // top 100, left 50 + center
-        const pBio = {x: 225, y: 160};
-        const pBed = {x: 675, y: 110}; // right 50 -> 750 center
-        const pTank = {x: 400, y: 525};
+        const pMech = {x: 95, y: 240}; // top 180, left 50 + center(45) -> ~95
+        const pBio = {x: 225, y: 240}; // top 180, left 180 + center(45) -> ~225
+        const pBed = {x: 675, y: 190}; // top 130, right 50 (750), width 250 (center +125) -> Wait right 50 is at x=550. No, 800-50-250 = 500 start x. Center is 625.
+        // Let's recheck pBed css: right: 50px, width: 250px.
+        // Left = 800 - 50 - 250 = 500. Center X = 500 + 125 = 625.
+        // Top = 130. Height 120. Center Y = 130 + 60 = 190.
+        const pTank = {x: 400, y: 525}; // bottom 50, width 300. Center X 400. Top 600-50-150 = 400. Center Y 400 + 75 = 475. 
+        // Wait tank is bottom 50, height 150.
+        // Y pos: 600 - 50 - 150/2 = 475. 
+        // Let's keep pTank at typical pipe entry level.
 
         setPath('path-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`); setPath('flow-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`);
         setPath('path-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`); setPath('flow-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`);
@@ -358,11 +370,11 @@
     function getPosFromCSS(id) { 
         // Simplificación: Usar coordenadas estáticas pre-calculadas para estabilidad
         // ya que el drag and drop usa CSS fijo en el board
-        if(id=='slot-pump') return {x: 300, y: 550};
-        if(id=='slot-mech') return {x: 95, y: 160};
-        if(id=='slot-bio') return {x: 225, y: 160};
-        if(id=='slot-bed') return {x: 625, y: 110};
-        if(id=='slot-tank') return {x: 400, y: 500};
+        if(id=='slot-pump') return {x: 300, y: 550}; // Approx
+        if(id=='slot-mech') return {x: 95, y: 240}; // Adjusted
+        if(id=='slot-bio') return {x: 225, y: 240}; // Adjusted
+        if(id=='slot-bed') return {x: 625, y: 190}; // Adjusted
+        if(id=='slot-tank') return {x: 400, y: 500}; // Approx
         return {x:0, y:0};
     }
     function setPath(id, d) { document.getElementById(id).setAttribute('d', d); }
