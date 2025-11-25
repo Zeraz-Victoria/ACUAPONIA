@@ -2,47 +2,59 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acuaponía Builder V14: Experto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Acuaponía Builder V15: Universal</title>
     <style>
         /* ESTILOS GENERALES */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #eceff1; color: #333; margin: 0; padding: 0; user-select: none; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
         /* HEADER */
-        header { background: #263238; color: white; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; height: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; }
-        h1 { font-size: 1.1rem; margin: 0; display: flex; align-items: center; gap: 10px; }
+        header { background: #263238; color: white; padding: 0 15px; display: flex; justify-content: space-between; align-items: center; height: 50px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 20; flex-shrink: 0; }
+        h1 { font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 5px; }
         
-        .stats-bar { display: flex; gap: 15px; align-items: center; font-size: 0.85rem; }
+        .stats-bar { display: flex; gap: 10px; align-items: center; font-size: 0.75rem; overflow-x: auto; white-space: nowrap; padding-left: 10px; }
         .stat-item { background: #37474f; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 5px; position: relative;}
         .stat-val { font-weight: bold; color: #4fc3f7; }
         
         /* Barra de vida peces */
-        .health-indicator { width: 10px; height: 10px; border-radius: 50%; background: #66bb6a; display: inline-block; margin-right: 5px; }
+        .health-indicator { width: 8px; height: 8px; border-radius: 50%; background: #66bb6a; display: inline-block; margin-right: 3px; }
         .health-low { background: #ef5350; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.5; } }
 
-        /* LAYOUT PRINCIPAL (3 COLUMNAS) */
-        .main-layout { display: grid; grid-template-columns: 240px 1fr 400px; flex: 1; overflow: hidden; position: relative; }
+        /* LAYOUT PRINCIPAL (3 COLUMNAS PC / FLEX MÓVIL) */
+        .main-layout { display: grid; grid-template-columns: 240px 1fr 350px; flex: 1; overflow: hidden; position: relative; transition: all 0.3s; }
         
-        /* 1. INVENTARIO (IZQUIERDA) */
+        /* 1. INVENTARIO */
         .inventory { background: #fff; border-right: 1px solid #ddd; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 10; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-        .inv-section { font-weight: bold; color: #0277bd; margin-top: 15px; border-bottom: 2px solid #e1f5fe; padding-bottom: 2px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .inv-section { font-weight: bold; color: #0277bd; margin-top: 10px; border-bottom: 2px solid #e1f5fe; padding-bottom: 2px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .draggable-item { 
             background: #f5f5f5; border: 1px solid #ccc; border-radius: 6px; padding: 8px; 
-            cursor: grab; display: flex; align-items: center; gap: 10px; transition: all 0.2s; font-size: 0.85rem;
+            cursor: grab; display: flex; align-items: center; gap: 8px; transition: all 0.2s; font-size: 0.85rem;
+            touch-action: none; /* Crucial para móviles */
         }
         .draggable-item:hover { transform: translateX(5px); background: #e3f2fd; border-color: #2196f3; }
-        .draggable-item:active { cursor: grabbing; }
+        .draggable-item:active { cursor: grabbing; transform: scale(0.95); }
         .draggable-item.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
         .item-icon { font-size: 1.2rem; min-width: 25px; text-align: center; }
 
+        /* GHOST DRAG (Elemento visual al arrastrar en móvil) */
+        .drag-ghost {
+            position: fixed; pointer-events: none; z-index: 9999; opacity: 0.8;
+            background: white; padding: 10px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 2px solid #2196f3; transform: translate(-50%, -50%); font-size: 0.9rem; font-weight: bold;
+            display: flex; align-items: center; gap: 5px;
+        }
+
         /* 2. ZONA DE CONSTRUCCIÓN (CENTRO) */
-        .workspace { position: relative; background-image: radial-gradient(#cfd8dc 1px, transparent 1px); background-size: 20px 20px; background-color: #eceff1; overflow: hidden; }
+        .workspace { position: relative; background-image: radial-gradient(#cfd8dc 1px, transparent 1px); background-size: 20px 20px; background-color: #eceff1; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
+        /* Contenedor relativo para escalar en móviles */
+        .game-board { position: relative; width: 800px; height: 600px; transform-origin: center center; }
+
         /* Instrucciones Flotantes */
         .instruction-panel {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95); padding: 8px 20px; border-radius: 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1); font-weight: bold; color: #006064;
             border: 2px solid #00bcd4; z-index: 50; text-align: center; width: 80%; font-size: 0.9rem;
@@ -57,27 +69,23 @@
         
         /* Panel de Control IA */
         .ai-control-panel {
-            background: #f3e5f5; padding: 15px; border-bottom: 1px solid #e1bee7;
-            position: sticky; top: 0; z-index: 20;
+            background: #f3e5f5; padding: 10px; border-bottom: 1px solid #e1bee7;
+            position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; gap: 5px;
         }
-        .ai-title { color: #6200ea; font-weight: bold; margin-bottom: 10px; display: block; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .ai-buttons { display: flex; gap: 10px; }
+        .ai-title { color: #6200ea; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        .ai-buttons { display: flex; gap: 5px; }
         .btn-ai { 
             flex: 1; background: white; border: 1px solid #6200ea; color: #6200ea; 
-            padding: 8px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; 
+            padding: 6px; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.75rem; 
             transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px;
         }
         .btn-ai:hover { background: #6200ea; color: white; }
 
-        /* Contenido del Manual */
-        .manual-content { padding: 20px; font-size: 0.9rem; line-height: 1.6; color: #444; }
-        .manual-content h2 { font-size: 1.1rem; color: #0277bd; border-bottom: 2px solid #b3e5fc; padding-bottom: 5px; margin-top: 25px; margin-bottom: 10px; }
-        .manual-content h2:first-child { margin-top: 0; }
-        .manual-content h3 { font-size: 0.95rem; color: #006064; margin-top: 15px; margin-bottom: 5px; font-weight: bold; }
-        .manual-content p { margin-bottom: 10px; text-align: justify; }
-        .manual-content ul { padding-left: 20px; margin: 5px 0; }
-        .manual-content li { margin-bottom: 5px; }
-        .highlight-box { background: #e0f2f1; padding: 15px; border-radius: 5px; border-left: 4px solid #009688; margin: 15px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        /* Manual */
+        .manual-content { padding: 15px; font-size: 0.85rem; line-height: 1.5; color: #444; }
+        .manual-content h2 { font-size: 1rem; color: #0277bd; border-bottom: 2px solid #b3e5fc; padding-bottom: 5px; margin-top: 20px; margin-bottom: 8px; }
+        .manual-content h3 { font-size: 0.9rem; color: #006064; margin-top: 10px; font-weight: bold; }
+        .highlight-box { background: #e0f2f1; padding: 10px; border-radius: 5px; border-left: 4px solid #009688; margin: 10px 0; }
 
         /* SISTEMA DE TUBERÍAS (SVG) */
         .pipes-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
@@ -94,7 +102,6 @@
         .drop-zone.hovered { background: rgba(129, 199, 132, 0.6); border-color: #4caf50; transform: scale(1.05); }
         .drop-zone.filled { border: none; background: transparent; }
         
-        /* ETIQUETAS DE COMPONENTES */
         .label-tag {
             position: absolute; bottom: -20px; width: 100%; text-align: center;
             background: #333; color: white; padding: 2px 0; font-size: 10px; border-radius: 4px;
@@ -102,12 +109,12 @@
         }
         .drop-zone.filled:hover .label-tag { opacity: 1; }
 
-        /* POSICIONES */
-        #slot-tank { bottom: 20px; left: 50%; transform: translateX(-50%); width: 280px; height: 140px; }
-        #slot-bed { top: 60px; right: 30px; width: 220px; height: 100px; }
-        #slot-mech { top: 80px; left: 30px; width: 80px; height: 110px; }
-        #slot-bio { top: 80px; left: 140px; width: 80px; height: 110px; }
-        #slot-pump { bottom: 30px; left: calc(50% - 110px); width: 40px; height: 40px; z-index: 5; }
+        /* POSICIONES ABSOLUTAS (En base al Game Board de 800x600) */
+        #slot-tank { bottom: 50px; left: 50%; transform: translateX(-50%); width: 300px; height: 150px; }
+        #slot-bed { top: 50px; right: 50px; width: 250px; height: 120px; }
+        #slot-mech { top: 100px; left: 50px; width: 90px; height: 120px; }
+        #slot-bio { top: 100px; left: 180px; width: 90px; height: 120px; }
+        #slot-pump { bottom: 70px; left: calc(50% - 120px); width: 40px; height: 40px; z-index: 5; }
         #slot-pipes { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100px; height: 60px; }
 
         /* OBJETOS VISUALES */
@@ -115,43 +122,79 @@
         .object.visible { display: block; animation: popIn 0.4s ease-out; }
         @keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .visual-tank { background: rgba(33, 150, 243, 0.1); border: 3px solid #1976d2; border-radius: 0 0 10px 10px; border-top: none; position: relative; overflow: hidden; }
+        .visual-tank { background: rgba(33, 150, 243, 0.1); border: 3px solid #1976d2; border-radius: 0 0 15px 15px; border-top: none; position: relative; overflow: hidden; }
         .visual-bed { background: #795548; border: 3px solid #4e342e; border-radius: 5px; position: relative; overflow: hidden; }
         .visual-mech { background: #bdbdbd; border: 3px solid #616161; border-radius: 5px 5px 15px 15px; display: flex; align-items: center; justify-content: center; }
-        .visual-mech::after { content: "🌀"; font-size: 20px; opacity: 0.5; }
-        .visual-bio { background: #4db6ac; border: 3px solid #00796b; border-radius: 5px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 2px; padding: 5px; }
-        .bio-ball { width: 8px; height: 8px; background: #004d40; border-radius: 50%; opacity: 0.3; }
+        .visual-mech::after { content: "🌀"; font-size: 24px; opacity: 0.5; }
+        .visual-bio { background: #4db6ac; border: 3px solid #00796b; border-radius: 5px; display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 3px; padding: 5px; }
+        .bio-ball { width: 10px; height: 10px; background: #004d40; border-radius: 50%; opacity: 0.3; }
         .visual-pump { background: #263238; border-radius: 50%; border: 2px solid #000; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
 
         /* AGUA Y VIDA */
         .water-fill { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: rgba(33, 150, 243, 0.5); transition: height 1.5s ease-in-out; }
         .water-fill.dirty { background: rgba(141, 110, 99, 0.6); }
         
-        .fish-mob { position: absolute; font-size: 20px; transition: all 1s; pointer-events: none; }
+        .fish-mob { position: absolute; font-size: 24px; transition: all 1s; pointer-events: none; }
         .fish-dead { transform: rotate(180deg) !important; filter: grayscale(100%); transition: transform 0.5s; }
-        
         .plant-mob { position: absolute; bottom: 5px; font-size: 0px; transition: font-size 1s; transform-origin: bottom center; }
 
         /* TOASTS */
-        .floater { position: absolute; font-weight: bold; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 200; text-shadow: 0 0 3px white; }
-        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-40px); } }
+        .floater { position: fixed; font-weight: bold; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 200; text-shadow: 0 0 3px white; font-size: 1.2rem; }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
 
         /* MODAL COMPARTIDO */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-box { background: white; width: 90%; max-width: 500px; padding: 30px; border-radius: 15px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-box { background: white; width: 85%; max-width: 450px; padding: 25px; border-radius: 15px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+
+        /* --- MEDIA QUERIES PARA MÓVIL --- */
+        @media (max-width: 900px) {
+            /* Cambiar layout a columna */
+            .main-layout { grid-template-columns: 1fr; grid-template-rows: 1fr auto auto; }
+            
+            /* Orden: Juego arriba, Inventario abajo */
+            .workspace { order: 1; height: 55vh; }
+            
+            /* Inventario Horizontal Deslizable */
+            .inventory { 
+                order: 2; width: 100%; height: 120px; flex-direction: row; border-right: none; border-top: 2px solid #ccc;
+                overflow-x: auto; overflow-y: hidden; padding: 5px; gap: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            }
+            .inv-section { display: none; } /* Ocultar títulos para ahorrar espacio */
+            .draggable-item { 
+                min-width: 100px; flex-direction: column; justify-content: center; text-align: center; 
+                font-size: 0.75rem; padding: 5px; height: 90%;
+            }
+            .item-icon { font-size: 1.8rem; display: block; margin-bottom: 2px; }
+            .draggable-item:hover { transform: none; } /* Quitar hover en táctil */
+
+            /* Panel Educativo Oculto por defecto o abajo */
+            .edu-sidebar { order: 3; height: auto; max-height: 25vh; border-left: none; border-top: 1px solid #ccc; }
+            
+            /* Ajustar Game Board para que quepa */
+            .game-board { transform: scale(0.6); transform-origin: top center; margin-top: 20px; }
+            
+            /* Ajustar Header */
+            h1 { font-size: 0.9rem; }
+            .stats-bar { gap: 5px; font-size: 0.7rem; }
+        }
+
+        @media (max-width: 480px) {
+            .game-board { transform: scale(0.45); }
+            .instruction-panel { width: 90%; font-size: 0.8rem; }
+        }
         
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🌱 Acuaponía <span style="color:#81d4fa;">EXPERT</span></h1>
+    <h1>🌱 Acuaponía <span style="color:#81d4fa;">V15</span></h1>
     <div class="stats-bar">
-        <div class="stat-item" title="Salud Peces"><div class="health-indicator" id="ind-health"></div> Salud <span id="stat-health">100%</span></div>
-        <div class="stat-item" title="Bacterias Nitrificantes">🦠 <span id="stat-bac">0%</span></div>
-        <div class="stat-item" title="Nivel de Amoníaco">🧪 <span id="stat-amm">0</span></div>
-        <div class="stat-item" title="Acidez del agua">💧 pH <span id="stat-ph">7.0</span></div>
-        <div class="stat-item" title="Progreso de Cosecha">🥬 <span id="stat-grow">0%</span></div>
+        <div class="stat-item"><div class="health-indicator" id="ind-health"></div> ❤️ <span id="stat-health">100%</span></div>
+        <div class="stat-item">🦠 <span id="stat-bac">0%</span></div>
+        <div class="stat-item">🧪 <span id="stat-amm">0</span></div>
+        <div class="stat-item">💧 <span id="stat-ph">7.0</span></div>
+        <div class="stat-item">🥬 <span id="stat-grow">0%</span></div>
     </div>
 </header>
 
@@ -160,24 +203,24 @@
     <!-- 1. INVENTARIO -->
     <div class="inventory">
         <div class="inv-section">Estructura</div>
-        <div class="draggable-item" draggable="true" data-type="tank" id="item-tank"><span class="item-icon">🟦</span> Tanque Peces</div>
-        <div class="draggable-item" draggable="true" data-type="pump" id="item-pump"><span class="item-icon">⚙️</span> Bomba Agua</div>
-        <div class="draggable-item" draggable="true" data-type="mech" id="item-mech"><span class="item-icon">🗑️</span> Filtro Mecánico</div>
+        <div class="draggable-item" draggable="true" data-type="tank" id="item-tank"><span class="item-icon">🟦</span> Tanque</div>
+        <div class="draggable-item" draggable="true" data-type="pump" id="item-pump"><span class="item-icon">⚙️</span> Bomba</div>
+        <div class="draggable-item" draggable="true" data-type="mech" id="item-mech"><span class="item-icon">🗑️</span> Filtro M.</div>
         <div class="draggable-item" draggable="true" data-type="bio" id="item-bio"><span class="item-icon">🦠</span> Biofiltro</div>
-        <div class="draggable-item" draggable="true" data-type="bed" id="item-bed"><span class="item-icon">🟫</span> Cama Cultivo</div>
+        <div class="draggable-item" draggable="true" data-type="bed" id="item-bed"><span class="item-icon">🟫</span> Cama</div>
         <div class="draggable-item" draggable="true" data-type="pipes" id="item-pipes"><span class="item-icon">🔧</span> Tuberías</div>
-        <div class="draggable-item" draggable="true" data-type="water" id="item-water"><span class="item-icon">💧</span> Llenar Agua</div>
+        <div class="draggable-item" draggable="true" data-type="water" id="item-water"><span class="item-icon">💧</span> Agua</div>
 
-        <div class="inv-section">Biología (Peces)</div>
-        <div class="draggable-item locked" draggable="true" data-type="ammonia" id="item-ammonia"><span class="item-icon">🧪</span> Amoníaco Puro</div>
-        <div class="draggable-item locked" draggable="true" data-type="fish" id="item-fish"><span class="item-icon">🐟</span> Tilapias</div>
+        <div class="inv-section">Biología</div>
+        <div class="draggable-item locked" draggable="true" data-type="ammonia" id="item-ammonia"><span class="item-icon">🧪</span> Amoníaco</div>
+        <div class="draggable-item locked" draggable="true" data-type="fish" id="item-fish"><span class="item-icon">🐟</span> Peces</div>
         
-        <div class="inv-section">Cultivos (Elegir uno)</div>
-        <div class="draggable-item locked" draggable="true" data-type="lettuce" id="item-lettuce"><span class="item-icon">🥬</span> Lechuga (Fácil)</div>
-        <div class="draggable-item locked" draggable="true" data-type="tomato" id="item-tomato"><span class="item-icon">🍅</span> Tomate (Medio)</div>
-        <div class="draggable-item locked" draggable="true" data-type="berry" id="item-berry"><span class="item-icon">🍓</span> Fresa (Difícil)</div>
+        <div class="inv-section">Cultivos</div>
+        <div class="draggable-item locked" draggable="true" data-type="lettuce" id="item-lettuce"><span class="item-icon">🥬</span> Lechuga</div>
+        <div class="draggable-item locked" draggable="true" data-type="tomato" id="item-tomato"><span class="item-icon">🍅</span> Tomate</div>
+        <div class="draggable-item locked" draggable="true" data-type="berry" id="item-berry"><span class="item-icon">🍓</span> Fresa</div>
         
-        <div class="inv-section">Mantenimiento</div>
+        <div class="inv-section">Cuidados</div>
         <div class="draggable-item locked" draggable="true" data-type="food" id="item-food"><span class="item-icon">🦐</span> Comida</div>
         <div class="draggable-item locked" draggable="true" data-type="base" id="item-base"><span class="item-icon">💊</span> Subir pH</div>
         <div class="draggable-item locked" draggable="true" data-type="acid" id="item-acid"><span class="item-icon">🍋</span> Bajar pH</div>
@@ -185,32 +228,30 @@
 
     <!-- 2. ÁREA DE TRABAJO -->
     <div class="workspace" id="workspace">
+        <div class="instruction-panel" id="instruction">Construye: Arrastra el TANQUE al centro.</div>
         
-        <!-- Instrucciones -->
-        <div class="instruction-panel" id="instruction">Construye tu sistema: Arrastra el TANQUE al centro.</div>
+        <!-- Contenedor Escalable -->
+        <div class="game-board" id="game-board">
+            <!-- SVG Tuberías -->
+            <svg class="pipes-layer">
+                <path id="path-1" class="pipe-path" d="M0 0" /><path id="flow-1" class="pipe-water" d="M0 0" />
+                <path id="path-2" class="pipe-path" d="M0 0" /><path id="flow-2" class="pipe-water" d="M0 0" />
+                <path id="path-3" class="pipe-path" d="M0 0" /><path id="flow-3" class="pipe-water" d="M0 0" />
+                <path id="path-4" class="pipe-path" d="M0 0" /><path id="flow-4" class="pipe-water" d="M0 0" />
+            </svg>
 
-        <!-- SVG Tuberías -->
-        <svg class="pipes-layer">
-            <path id="path-1" class="pipe-path" d="M0 0" /><path id="flow-1" class="pipe-water" d="M0 0" />
-            <path id="path-2" class="pipe-path" d="M0 0" /><path id="flow-2" class="pipe-water" d="M0 0" />
-            <path id="path-3" class="pipe-path" d="M0 0" /><path id="flow-3" class="pipe-water" d="M0 0" />
-            <path id="path-4" class="pipe-path" d="M0 0" /><path id="flow-4" class="pipe-water" d="M0 0" />
-        </svg>
-
-        <!-- SLOTS -->
-        <div id="slot-tank" class="drop-zone" data-accept="tank,water,ammonia,fish,food,base,acid">📍 Tanque<div class="object visual-tank" id="obj-tank"><div class="water-fill" id="water-tank"></div><div id="fish-container" style="position:absolute; inset:0;"></div><div class="label-tag">Tanque</div></div></div>
-        <div id="slot-pump" class="drop-zone" data-accept="pump">⚙️<div class="object visual-pump" id="obj-pump"><div class="label-tag">Bomba</div></div></div>
-        <div id="slot-mech" class="drop-zone" data-accept="mech">🗑️<div class="object visual-mech" id="obj-mech"><div class="label-tag">Decantador</div></div></div>
-        <div id="slot-bio" class="drop-zone" data-accept="bio">🦠<div class="object visual-bio" id="obj-bio"><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="label-tag">Biofiltro</div></div></div>
-        <div id="slot-bed" class="drop-zone" data-accept="bed,lettuce,tomato,berry">🟫 Cama<div class="object visual-bed" id="obj-bed"><div class="water-fill" id="water-bed"></div><div id="plants-container" style="position:absolute; bottom:0; width:100%; text-align:center;"></div><div class="label-tag">Cama de Cultivo</div></div></div>
-        <div id="slot-pipes" class="drop-zone" data-accept="pipes">🔗<div class="object" id="obj-pipes" style="display:none;"></div></div>
-
+            <!-- SLOTS -->
+            <div id="slot-tank" class="drop-zone" data-accept="tank,water,ammonia,fish,food,base,acid">📍 Tanque<div class="object visual-tank" id="obj-tank"><div class="water-fill" id="water-tank"></div><div id="fish-container" style="position:absolute; inset:0;"></div><div class="label-tag">Tanque</div></div></div>
+            <div id="slot-pump" class="drop-zone" data-accept="pump">⚙️<div class="object visual-pump" id="obj-pump"><div class="label-tag">Bomba</div></div></div>
+            <div id="slot-mech" class="drop-zone" data-accept="mech">🗑️<div class="object visual-mech" id="obj-mech"><div class="label-tag">Decantador</div></div></div>
+            <div id="slot-bio" class="drop-zone" data-accept="bio">🦠<div class="object visual-bio" id="obj-bio"><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="bio-ball"></div><div class="label-tag">Biofiltro</div></div></div>
+            <div id="slot-bed" class="drop-zone" data-accept="bed,lettuce,tomato,berry">🟫 Cama<div class="object visual-bed" id="obj-bed"><div class="water-fill" id="water-bed"></div><div id="plants-container" style="position:absolute; bottom:0; width:100%; text-align:center;"></div><div class="label-tag">Cama de Cultivo</div></div></div>
+            <div id="slot-pipes" class="drop-zone" data-accept="pipes">🔗<div class="object" id="obj-pipes" style="display:none;"></div></div>
+        </div>
     </div>
 
-    <!-- 3. PANEL EDUCATIVO (DERECHA) -->
+    <!-- 3. PANEL EDUCATIVO (DERECHA/ABAJO) -->
     <div class="edu-sidebar">
-        
-        <!-- Controles IA -->
         <div class="ai-control-panel">
             <span class="ai-title">Asistente Inteligente</span>
             <div class="ai-buttons">
@@ -218,55 +259,19 @@
                 <button class="btn-ai" onclick="askAI('tips')">💡 Tip Experto</button>
             </div>
         </div>
-
-        <!-- Manual Educativo Expandido -->
         <div class="manual-content">
             <h2>FUNDAMENTOS DE LA ACUAPONÍA</h2>
-            
-            <h3>¿Qué es un sistema acuapónico?</h3>
-            <p>Es un ecosistema vivo que integra la <b>Acuicultura</b> (peces) y la <b>Hidroponía</b> (plantas). Los peces producen desechos ricos en nitrógeno, que las bacterias transforman en alimento para las plantas. A su vez, las plantas filtran el agua, devolviéndola limpia a los peces. Es un ejemplo perfecto de economía circular y agricultura sostenible.</p>
-            
-            <h3>El Ciclo Vital del Nitrógeno</h3>
-            <p>El proceso químico invisible que mantiene todo vivo:</p>
-            <ul>
-                <li><b>Amoníaco (NH₃):</b> Desecho tóxico excretado por los peces.</li>
-                <li><b>Nitritos (NO₂):</b> Primera transformación por bacterias <i>Nitrosomonas</i>. Aún tóxico.</li>
-                <li><b>Nitratos (NO₃):</b> Producto final gracias a bacterias <i>Nitrobacter</i>. ¡Es el fertilizante ideal para tus plantas!</li>
-            </ul>
-
-            <h2>CUIDADO DE LOS PECES (Acuicultura)</h2>
-            <p>Los peces son el "motor" del sistema. Debes elegir especies resistentes.</p>
+            <h3>¿Qué es?</h3>
+            <p>Un ecosistema vivo que integra la <b>Acuicultura</b> (peces) y la <b>Hidroponía</b> (plantas). Los peces alimentan a las plantas, y las plantas limpian el agua.</p>
+            <h3>Ciclo del Nitrógeno</h3>
+            <p>Peces (Amoníaco) ➔ Bacterias (Nitratos) ➔ Plantas (Comida). ¡Sin bacterias, el ciclo se rompe!</p>
+            <h2>CUIDADO Y PARÁMETROS</h2>
             <div class="highlight-box">
-                <b>Parámetros Críticos:</b><br>
-                🌡️ Temperatura: 20°C - 28°C<br>
+                🌡️ Temp: 20°C - 28°C<br>
                 🧪 pH Ideal: 6.8 - 7.2<br>
-                ☠️ Amoníaco: Debe ser cercano a 0
+                ☠️ Amoníaco: < 1 ppm
             </div>
-            <p><b>Alerta de Muerte:</b> Si el pH baja de 6.0 (muy ácido) o sube de 8.0, o si el Amoníaco supera 5 ppm, tus peces enfermarán y morirán rápidamente.</p>
-
-            <h2>CULTIVOS (Hidroponía)</h2>
-            <h3>¿Qué plantas elegir?</h3>
-            <ul>
-                <li><b>🥬 Lechuga:</b> Crecimiento rápido, baja demanda de nutrientes. Ideal para principiantes.</li>
-                <li><b>🍅 Tomate:</b> Demanda media-alta. Requiere potasio y hierro adicionales en la floración.</li>
-                <li><b>🍓 Fresas:</b> Alta demanda y sensibles al pH. Un reto para expertos.</li>
-            </ul>
-            
-            <h3>El papel de las Raíces</h3>
-            <p>Funcionan como un filtro biológico adicional, atrapando partículas finas y ofreciendo superficie para que vivan más bacterias beneficiosas.</p>
-
-            <h2>INGENIERÍA DEL SISTEMA</h2>
-            <h3>Componentes Esenciales</h3>
-            <ul>
-                <li><b>Tanque:</b> Volumen de agua principal.</li>
-                <li><b>Filtro Mecánico (Decantador):</b> Remueve sólidos pesados (heces) para que no obstruyan las raíces.</li>
-                <li><b>Biofiltro:</b> Contiene "bio-bolas" o grava donde colonizan las bacterias.</li>
-                <li><b>Cama de Cultivo:</b> Soporte inerte (como arcilla expandida) para las plantas.</li>
-                <li><b>Sifón de Campana:</b> Mecanismo automático que llena y vacía la cama para oxigenar las raíces (Ciclo de Marea).</li>
-            </ul>
-
-            <h2>SUSTENTABILIDAD</h2>
-            <p>Este sistema utiliza un <b>90% menos de agua</b> que la agricultura tradicional en tierra, ya que el agua se recircula infinitamente y solo se pierde por evaporación y transpiración de las plantas. No requiere pesticidas ni fertilizantes químicos derivados del petróleo.</p>
+            <p><b>¡Cuidado!</b> Si el agua se pone turbia o el pH baja de 6.0, tus peces están en peligro mortal.</p>
         </div>
     </div>
 </div>
@@ -289,7 +294,7 @@
             <h3 style="margin-top:0;">CERTIFICADO DE MAESTRO ACUAPONISTA</h3>
             <p style="font-size:0.9rem;">Otorgado por excelencia en bioseguridad y producción sostenible.</p>
         </div>
-        <button class="btn-ai" style="margin: 0 auto; border-color:#009688; color:#009688;" onclick="location.reload()">Reiniciar Sistema</button>
+        <button class="btn-ai" style="margin: 0 auto; border-color:#009688; color:#009688;" onclick="location.reload()">Reiniciar</button>
     </div>
 </div>
 
@@ -297,24 +302,52 @@
     <div class="modal-box" style="border: 5px solid #ef5350;">
         <h1 style="font-size: 3rem; margin:0;">☠️</h1>
         <h2 style="color:#c62828;">Tus peces han muerto</h2>
-        <p id="death-reason">La toxicidad del agua fue demasiado alta.</p>
-        <p style="font-size:0.9rem; color:#555;">Recuerda: Sin peces no hay nutrientes, y sin bacterias no hay agua limpia.</p>
-        <button class="btn-ai" style="margin: 20px auto; background:#ef5350; color:white; border:none;" onclick="location.reload()">Intentar de Nuevo</button>
+        <p id="death-reason">Causa desconocida.</p>
+        <button class="btn-ai" style="margin: 20px auto; background:#ef5350; color:white;" onclick="location.reload()">Reintentar</button>
     </div>
 </div>
 
 <script>
+    /* LOGICA ADAPTATIVA */
+    // Ajustar zoom del tablero en resize
+    function resizeBoard() {
+        const board = document.getElementById('game-board');
+        const container = document.getElementById('workspace');
+        if(window.innerWidth < 900) {
+            // Calcular escala para que quepa
+            let scale = Math.min(container.clientWidth / 850, container.clientHeight / 650);
+            board.style.transform = `scale(${scale})`;
+        } else {
+            board.style.transform = 'scale(1)';
+        }
+    }
+    window.addEventListener('resize', () => { resizeBoard(); updatePipes(); });
+    setTimeout(resizeBoard, 100);
+
     /* LÓGICA TUBERÍAS */
     function updatePipes() {
-        const svg = document.querySelector('.pipes-layer');
-        const rect = svg.getBoundingClientRect();
         const getCenter = (id) => {
             const el = document.getElementById(id);
-            const r = el.getBoundingClientRect();
-            return { x: r.left + r.width/2 - rect.left, y: r.top + r.height/2 - rect.top };
+            const r = el.getBoundingClientRect(); // Coordenadas globales
+            const svgRect = document.querySelector('.pipes-layer').getBoundingClientRect();
+            // Convertir a coordenadas relativas al SVG (que está dentro del game-board transformado)
+            // Esto es truco: en scale transform, SVG coords son relativas al sistema sin escala.
+            // Mejor usar offsets relativos al board.
+            const board = document.getElementById('game-board');
+            const boardRect = board.getBoundingClientRect();
+            
+            // Posición relativa al board (0-800, 0-600)
+            // offsetLeft no funciona bien con transform. Usamos coordenadas relativas manuales.
+            // Hardcoded positions based on CSS to ensure stability in zoom
+            return getPosFromCSS(id);
         };
 
-        const pPump = getCenter('slot-pump'), pMech = getCenter('slot-mech'), pBio = getCenter('slot-bio'), pBed = getCenter('slot-bed'), pTank = getCenter('slot-tank');
+        // Coordenadas "lógicas" (sin escala) basadas en el CSS del tablero
+        const pPump = {x: 280, y: 550}; // bottom 70, left calc(50%-120) = 400-120=280
+        const pMech = {x: 95, y: 160}; // top 100, left 50 + center
+        const pBio = {x: 225, y: 160};
+        const pBed = {x: 675, y: 110}; // right 50 -> 750 center
+        const pTank = {x: 400, y: 525};
 
         setPath('path-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`); setPath('flow-1', `M ${pPump.x} ${pPump.y} V ${pMech.y} H ${pMech.x}`);
         setPath('path-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`); setPath('flow-2', `M ${pMech.x} ${pMech.y} H ${pBio.x}`);
@@ -322,33 +355,102 @@
         const bedOutX = pBed.x + 100;
         setPath('path-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 50} H ${pTank.x + 120} V ${pTank.y}`); setPath('flow-4', `M ${bedOutX} ${pBed.y} V ${pTank.y - 50} H ${pTank.x + 120} V ${pTank.y}`);
     }
+    function getPosFromCSS(id) { 
+        // Simplificación: Usar coordenadas estáticas pre-calculadas para estabilidad
+        // ya que el drag and drop usa CSS fijo en el board
+        if(id=='slot-pump') return {x: 300, y: 550};
+        if(id=='slot-mech') return {x: 95, y: 160};
+        if(id=='slot-bio') return {x: 225, y: 160};
+        if(id=='slot-bed') return {x: 625, y: 110};
+        if(id=='slot-tank') return {x: 400, y: 500};
+        return {x:0, y:0};
+    }
     function setPath(id, d) { document.getElementById(id).setAttribute('d', d); }
-    window.addEventListener('resize', updatePipes); setTimeout(updatePipes, 500);
+    setTimeout(updatePipes, 500);
 
     /* JUEGO */
     const STATE = { built: {}, chem: { bacteria:0, ammonia:0, ph:7 }, life: { fish:0, health:100, plants:0, plantType:null }, loop: null, gameOver:false };
-    
-    const PLANT_DATA = {
-        lettuce: { name: "Lechuga", growthRate: 0.3, icon: "🥬" },
-        tomato: { name: "Tomate", growthRate: 0.15, icon: "🍅" },
-        berry: { name: "Fresa", growthRate: 0.1, icon: "🍓" }
-    };
+    const PLANT_DATA = { lettuce: { name: "Lechuga", growthRate: 0.3, icon: "🥬" }, tomato: { name: "Tomate", growthRate: 0.15, icon: "🍅" }, berry: { name: "Fresa", growthRate: 0.1, icon: "🍓" } };
 
+    /* DRAG & DROP + TOUCH SUPPORT */
     const draggables = document.querySelectorAll('.draggable-item');
     const dropZones = document.querySelectorAll('.drop-zone');
 
-    draggables.forEach(d => d.addEventListener('dragstart', e => { if(!d.classList.contains('locked')) e.dataTransfer.setData('type', d.dataset.type); }));
+    // Soporte PC
+    draggables.forEach(d => d.addEventListener('dragstart', e => { 
+        if(!d.classList.contains('locked')) e.dataTransfer.setData('type', d.dataset.type); 
+    }));
     dropZones.forEach(z => {
         z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('hovered'); });
         z.addEventListener('dragleave', e => { z.classList.remove('hovered'); });
-        z.addEventListener('drop', e => { e.preventDefault(); z.classList.remove('hovered'); handleDrop(z, e.dataTransfer.getData('type'), e.clientX, e.clientY); });
+        z.addEventListener('drop', e => { 
+            e.preventDefault(); z.classList.remove('hovered'); 
+            handleAction(z, e.dataTransfer.getData('type'), e.clientX, e.clientY); 
+        });
     });
 
-    function handleDrop(zone, type, x, y) {
+    // Soporte TÁCTIL (Móvil)
+    let activeTouchItem = null;
+    let ghostEl = null;
+
+    draggables.forEach(d => {
+        d.addEventListener('touchstart', e => {
+            if(d.classList.contains('locked')) return;
+            e.preventDefault(); // Evitar scroll
+            activeTouchItem = d;
+            
+            // Crear fantasma visual
+            ghostEl = d.cloneNode(true);
+            ghostEl.classList.add('drag-ghost');
+            document.body.appendChild(ghostEl);
+            
+            moveGhost(e.touches[0]);
+        });
+        
+        d.addEventListener('touchmove', e => {
+            if(!activeTouchItem) return;
+            e.preventDefault();
+            moveGhost(e.touches[0]);
+        });
+
+        d.addEventListener('touchend', e => {
+            if(!activeTouchItem) return;
+            
+            // Detectar drop zone
+            const touch = e.changedTouches[0];
+            // Ocultar ghost momentáneamente para ver qué hay debajo
+            ghostEl.style.display = 'none';
+            const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+            ghostEl.style.display = 'flex';
+            
+            const zone = elemBelow ? elemBelow.closest('.drop-zone') : null;
+            
+            if(zone) {
+                handleAction(zone, activeTouchItem.dataset.type, touch.clientX, touch.clientY);
+                zone.classList.remove('hovered');
+            }
+
+            // Limpieza
+            if(ghostEl) ghostEl.remove();
+            activeTouchItem = null;
+            ghostEl = null;
+        });
+    });
+
+    function moveGhost(touch) {
+        if(ghostEl) {
+            ghostEl.style.left = touch.clientX + 'px';
+            ghostEl.style.top = touch.clientY + 'px';
+        }
+    }
+
+    /* MANEJO DE ACCIONES (Unificado para PC y Móvil) */
+    function handleAction(zone, type, x, y) {
         if(STATE.gameOver) return;
         const accept = zone.dataset.accept.split(',');
         if(!accept.includes(type)) return;
 
+        // Construcción
         if(['tank','pump','mech','bio','bed'].includes(type)) {
             if(!STATE.built[type]) {
                 STATE.built[type] = 1;
@@ -356,6 +458,7 @@
                 document.getElementById(`obj-${type}`).classList.add('visible');
                 document.getElementById(`item-${type}`).style.opacity = '0.3';
                 document.getElementById(`item-${type}`).draggable = false;
+                document.getElementById(`item-${type}`).classList.add('locked'); // Lock visuals
                 if(Object.keys(STATE.built).length >= 5) updateInstruction("Arrastra las TUBERÍAS para conectar.");
                 setTimeout(updatePipes, 100);
             }
@@ -382,6 +485,7 @@
                 if(!STATE.loop) STATE.loop = setInterval(simLoop, 1000);
             } else showToast("Faltan tuberías", x, y, "red");
         }
+        // Biología
         else if(type === 'ammonia') { STATE.chem.ammonia += 5; showToast("+5 Amoníaco", x, y, "brown"); }
         else if(type === 'fish') {
             if(STATE.chem.bacteria > 80) {
@@ -395,7 +499,7 @@
         else if(['lettuce','tomato','berry'].includes(type)) {
             STATE.life.plants = 1;
             STATE.life.plantType = type;
-            document.getElementById('item-lettuce').parentElement.style.display='none'; // Ocultar sección cultivos
+            document.getElementById('item-lettuce').parentElement.style.display='none'; 
             unlock('food'); unlock('base'); unlock('acid');
             addPlantVisuals(type);
             updateInstruction(`Cultivando ${PLANT_DATA[type].name}. Cuida a los peces.`);
@@ -407,37 +511,24 @@
 
     function simLoop() {
         if(STATE.gameOver) return;
-
-        // 1. Ciclado
+        // Ciclado
         if(STATE.chem.ammonia > 0 && STATE.chem.bacteria < 100) {
-            STATE.chem.bacteria += 2.0; 
-            STATE.chem.ammonia -= 0.1;
+            STATE.chem.bacteria += 2.0; STATE.chem.ammonia -= 0.1;
             if(STATE.chem.bacteria > 80) unlock('fish');
         }
-
-        // 2. Peces y Muerte
+        // Peces
         if(STATE.life.fish > 0) {
-            STATE.chem.ammonia += 0.1; // Desechos naturales
-            
-            // Daño
-            if(STATE.chem.ammonia > 5 || STATE.chem.ph < 6.0 || STATE.chem.ph > 8.0) {
-                STATE.life.health -= 2;
-            } else if(STATE.life.health < 100) {
-                STATE.life.health += 0.5;
-            }
+            STATE.chem.ammonia += 0.1; 
+            if(STATE.chem.ammonia > 5 || STATE.chem.ph < 6.0 || STATE.chem.ph > 8.0) STATE.life.health -= 2;
+            else if(STATE.life.health < 100) STATE.life.health += 0.5;
 
-            if(STATE.life.health <= 0) {
-                triggerGameOver(STATE.chem.ammonia > 5 ? "Intoxicación por Amoníaco" : "pH Letal");
-                return;
-            }
+            if(STATE.life.health <= 0) { triggerGameOver(STATE.chem.ammonia > 5 ? "Intoxicación por Amoníaco" : "pH Letal"); return; }
 
-            // Filtrado
             let clean = STATE.chem.ammonia * (STATE.chem.bacteria/100) * 0.5;
             STATE.chem.ammonia -= clean;
-            if(clean > 0) STATE.chem.ph -= 0.002; // Acidificación natural
+            if(clean > 0) STATE.chem.ph -= 0.002;
         }
-
-        // 3. Plantas
+        // Plantas
         if(STATE.life.plants > 0 && STATE.life.plantType) {
             if(STATE.chem.ph > 6 && STATE.chem.ph < 7.5 && STATE.life.health > 50) {
                 STATE.life.plants += PLANT_DATA[STATE.life.plantType].growthRate;
@@ -448,7 +539,6 @@
                 STATE.gameOver = true;
             }
         }
-
         STATE.chem.ammonia = Math.max(0, STATE.chem.ammonia);
         updateUI();
     }
@@ -458,23 +548,16 @@
         document.getElementById('stat-amm').innerText = STATE.chem.ammonia.toFixed(1);
         document.getElementById('stat-ph').innerText = STATE.chem.ph.toFixed(1);
         document.getElementById('stat-grow').innerText = Math.floor(STATE.life.plants) + "%";
-        
-        // Salud Peces
         document.getElementById('stat-health').innerText = Math.floor(STATE.life.health) + "%";
+        
         let ind = document.getElementById('ind-health');
-        if(STATE.life.health < 50) ind.classList.add('health-low');
-        else ind.classList.remove('health-low');
-
-        if(STATE.chem.ammonia > 10) document.getElementById('water-tank').classList.add('dirty');
-        else document.getElementById('water-tank').classList.remove('dirty');
+        if(STATE.life.health < 50) ind.classList.add('health-low'); else ind.classList.remove('health-low');
+        if(STATE.chem.ammonia > 10) document.getElementById('water-tank').classList.add('dirty'); else document.getElementById('water-tank').classList.remove('dirty');
 
         if(STATE.life.plants > 0) {
             let size = 10 + STATE.life.plants/2;
             let icon = PLANT_DATA[STATE.life.plantType].icon;
-            document.querySelectorAll('.plant-mob').forEach(p => {
-                p.style.fontSize = size+"px";
-                p.innerText = icon;
-            });
+            document.querySelectorAll('.plant-mob').forEach(p => { p.style.fontSize = size+"px"; p.innerText = icon; });
         }
     }
 
@@ -486,11 +569,9 @@
             c.appendChild(f);
         }
         setInterval(() => {
-            if(STATE.life.health > 0) {
-                document.querySelectorAll('.fish-mob').forEach(f => {
-                    f.style.left=Math.random()*80+'%'; f.style.transform=Math.random()>0.5?'scaleX(1)':'scaleX(-1)';
-                });
-            }
+            if(STATE.life.health > 0) document.querySelectorAll('.fish-mob').forEach(f => {
+                f.style.left=Math.random()*80+'%'; f.style.transform=Math.random()>0.5?'scaleX(1)':'scaleX(-1)';
+            });
         }, 2000);
     }
 
@@ -528,10 +609,10 @@
             else if(STATE.chem.ammonia > 4) msg += "⚠️ <b>ALERTA:</b> Amoníaco subiendo. Deja de alimentar.";
             else msg += "✅ Sistema Estable.";
         } else {
-            msg = "💡 <b>Tip:</b> Las fresas necesitan un pH ligeramente más ácido (6.0-6.5) que las lechugas para absorber bien el hierro.";
+            msg = "💡 <b>Tip:</b> Las bacterias necesitan oscuridad. Evita que la luz solar dé directo al biofiltro.";
         }
         document.getElementById('ai-content').innerHTML = msg;
     }
 </script>
 </body>
-</html> 
+</html>
