@@ -2,392 +2,622 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Acuaponía OPS: Lab Móvil</title>
-    <!-- Iconos de Google -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eco-Huerto: Laboratorio Digital</title>
+    <!-- Fuentes e Iconos -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Fuente amigable y redondeada -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00f2ff;
-            --secondary: #004d40;
-            --bg: #121212;
-            --glass: rgba(255, 255, 255, 0.1);
-            --danger: #ff5252;
-            --success: #69f0ae;
+            /* Paleta de Colores "Eco-Friendly" */
+            --primary-green: #4CAF50;
+            --dark-green: #2E7D32;
+            --water-blue: #039BE5;
+            --sun-yellow: #FFB300;
+            --alert-red: #E53935;
+            --bg-color: #F1F8E9; /* Verde muy pálido */
+            --card-bg: #FFFFFF;
+            --text-color: #37474F;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+
+        * { box-sizing: border-box; user-select: none; }
+
         body {
-            font-family: 'Courier New', monospace;
-            background-color: var(--bg);
-            color: white;
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
-            padding: 0;
+            overflow: hidden;
             height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            
+            /* Fondo de naturaleza sutil */
+            background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2727&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
         }
-        
-        /* UI Elements */
+
+        /* Capa blanca semitransparente sobre la imagen de fondo para que el texto se lea bien */
+        body::before {
+            content: "";
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: -1;
+        }
+
+        /* --- UI GENERAL --- */
         .screen {
-            flex: 1;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            animation: fadeIn 0.5s;
-        }
-        .active { display: flex; }
-        
-        h1, h2 { text-shadow: 0 0 10px var(--primary); text-align: center; }
-        
-        .hud-panel {
-            background: var(--glass);
-            border: 1px solid var(--primary);
-            border-radius: 10px;
-            padding: 15px;
-            width: 90%;
-            max-width: 400px;
-            margin-bottom: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .btn {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            margin: 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: 0.3s;
-            text-transform: uppercase;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn:active { background: var(--primary); color: black; }
-        
-        .notebook-instruction {
-            border-left: 4px solid #ffeb3b;
-            background: rgba(255, 235, 59, 0.1);
-            padding: 10px;
-            font-size: 0.9rem;
-            text-align: left;
-            margin: 10px 0;
-        }
-
-        /* Camera View */
-        #camera-feed {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-radius: 10px;
-            border: 2px solid var(--primary);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: none;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+        .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
+
+        h1, h2, h3 { 
+            color: var(--dark-green);
+            margin: 0.5em 0; 
+            font-weight: 900;
+        }
+        
+        .header-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px; /* Expande para tocar bordes */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
         }
 
-        /* Microphone Visualizer */
-        #mic-visualizer {
+        .header-title {
+            font-size: 1.2rem;
+            color: var(--dark-green);
+            font-weight: 800;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Botones Amigables */
+        .btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 15px;
+            margin: 10px 0;
+            font-weight: 700;
+            border-radius: 12px; /* Bordes redondeados */
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            box-shadow: 0 4px 0 #388E3C; /* Efecto 3D simple */
             width: 100%;
-            height: 50px;
-            background: #333;
-            margin-top: 10px;
-            border-radius: 25px;
-            overflow: hidden;
+        }
+        .btn:active { 
+            transform: translateY(4px); 
+            box-shadow: none; 
+        }
+        
+        .btn.red { background: var(--alert-red); box-shadow: 0 4px 0 #C62828; }
+        .btn.blue { background: var(--water-blue); box-shadow: 0 4px 0 #0277BD; }
+        .btn.yellow { background: var(--sun-yellow); color: #3e2723; box-shadow: 0 4px 0 #FF8F00; }
+        .btn.outline { background: white; color: var(--text-color); border: 2px solid #ddd; box-shadow: none; }
+
+        /* Paneles tipo Tarjeta */
+        .panel {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Notas de Libreta */
+        .notebook-note {
+            background: #FFF9C4; /* Amarillo post-it suave */
+            border-left: 5px solid var(--sun-yellow);
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.95em;
+            color: #5D4037;
+            border-radius: 8px;
             position: relative;
         }
-        #mic-bar {
-            width: 0%;
-            height: 100%;
-            background: linear-gradient(90deg, var(--success), var(--danger));
-            transition: width 0.1s;
+        .notebook-note strong { display: block; margin-bottom: 5px; color: #F57F17; }
+        .notebook-note i { color: #F57F17; vertical-align: middle; margin-right: 5px; }
+
+        /* --- MENÚ DE GRID --- */
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .module-card {
+            background: white;
+            padding: 20px 10px; text-align: center;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer; transition: 0.3s;
+            border: 2px solid transparent;
+        }
+        .module-card:hover { 
+            transform: translateY(-5px);
+            border-color: var(--primary-green);
+        }
+        .module-card i { 
+            font-size: 3rem; display: block; margin-bottom: 10px; 
+            /* Gradiente en el texto del icono */
+            background: -webkit-linear-gradient(#66BB6A, #2E7D32);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .module-card h4 { margin: 5px 0; color: var(--text-color); font-size: 0.9rem; }
+        .tag { 
+            font-size: 0.7em; padding: 3px 8px; border-radius: 10px; font-weight: bold; display: inline-block;
+        }
+        .tag.alert { background: #FFEBEE; color: var(--alert-red); }
+        .tag.info { background: #E1F5FE; color: var(--water-blue); }
+
+        /* Texto de lectura */
+        .reading-text {
+            background: #FAFAFA;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px dashed #BDBDBD;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1rem;
+            color: #455A64;
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* Module Specifics */
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.8rem;
+        /* Opciones de selección */
+        .choice-card {
+            background: white;
+            border: 2px solid #E0E0E0;
+            padding: 15px; margin-bottom: 10px;
+            border-radius: 12px;
+            cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 10px;
         }
-        .critical { background: var(--danger); color: black; }
-        .stable { background: var(--success); color: black; }
+        .choice-card:hover { border-color: var(--primary-green); background: #F1F8E9; }
+        .choice-card.selected { 
+            border-color: var(--primary-green); 
+            background: #E8F5E9;
+            box-shadow: 0 0 0 2px var(--primary-green);
+        }
+        .choice-circle {
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ccc; flex-shrink: 0;
+        }
+        .choice-card.selected .choice-circle {
+            border-color: var(--primary-green); background: var(--primary-green);
+        }
+
+        /* Comparación Bio */
+        .comparison-container { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; gap: 10px; }
+        .bio-box { 
+            flex: 1; padding: 15px; 
+            background: white;
+            border-radius: 15px;
+            text-align: center; font-size: 0.9em; 
+            box-shadow: var(--shadow);
+            border: 2px solid #fff;
+        }
+        .bio-box.ancient { border-color: #FFB74D; background: #FFF3E0; }
+        .bio-box.modern { border-color: #4FC3F7; background: #E1F5FE; }
+        
+        .arrow-divider { font-size: 1.5em; color: #BDBDBD; }
+
+        select {
+            width: 100%; padding: 12px; 
+            background: white; color: var(--text-color); 
+            border: 2px solid #E0E0E0; border-radius: 12px; margin-bottom: 15px;
+            font-family: 'Nunito', sans-serif; font-size: 1rem;
+        }
+        select:focus { outline: none; border-color: var(--primary-green); }
+
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal Exito */
+        #modal-success {
+            background: rgba(255, 255, 255, 0.95);
+        }
 
     </style>
 </head>
 <body>
 
-    <!-- PANTALLA DE INICIO -->
-    <div id="screen-home" class="screen active">
-        <span class="material-icons" style="font-size: 64px; color: var(--primary);">science</span>
-        <h1>ACUAPONÍA OPS</h1>
-        <p>Sistema de Gestión Remota</p>
-        <p style="font-size: 0.8rem; color: #aaa;">Requiere: Cámara, Micrófono y Libreta de Campo</p>
-        <button class="btn" onclick="startGame()">Iniciar Sistema</button>
-    </div>
+    <!-- PANTALLA 1: INICIO (Friendly) -->
+    <div id="screen-boot" class="screen active" style="justify-content: center; align-items: center; text-align: center;">
+        <div style="background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px;">
+            <i class="material-icons" style="font-size: 5rem; color: var(--primary-green);">eco</i>
+            <h1 style="font-size: 2.5rem; margin: 10px 0;">Eco-Huerto</h1>
+            <p style="color: #78909C; margin-bottom: 30px;">Cargando Laboratorio Digital...</p>
+            
+            <p style="font-size: 0.8rem; color: #B0BEC5; font-weight: bold;">SINCRONIZANDO: INGLÉS • TECNOLOGÍA • BIOLOGÍA</p>
 
-    <!-- MENÚ DE EQUIPOS -->
-    <div id="screen-menu" class="screen">
-        <h2>PANEL DE CONTROL</h2>
-        <div class="hud-panel">
-            <p>Selecciona tu especialidad para restaurar el sistema:</p>
-            <button class="btn" onclick="loadModule('infra')">
-                <span class="material-icons">build</span> Infraestructura
-            </button>
-            <button class="btn" onclick="loadModule('plants')">
-                <span class="material-icons">eco</span> Plantas
-            </button>
-            <button class="btn" onclick="loadModule('water')">
-                <span class="material-icons">water_drop</span> Agua
-            </button>
-            <button class="btn" onclick="loadModule('fish')">
-                <span class="material-icons">set_meal</span> Peces
-            </button>
+            <!-- Barra de carga amigable -->
+            <div style="width: 100%; height: 10px; background: #E0E0E0; border-radius: 5px; overflow: hidden; margin-top: 15px;">
+                <div id="boot-bar" style="width: 0%; height: 100%; background: var(--primary-green); transition: width 0.1s; border-radius: 5px;"></div>
+            </div>
         </div>
     </div>
 
-    <!-- MÓDULO INFRAESTRUCTURA (MICRÓFONO) -->
-    <div id="screen-infra" class="screen">
-        <div class="hud-panel">
-            <h3>🔧 Mantenimiento de Bombas</h3>
-            <span class="status-badge critical">OBSTRUCCIÓN DETECTADA</span>
-            
-            <div class="notebook-instruction">
-                <strong>LIBRETA:</strong> Investiga cómo funciona un sifón de campana. Dibuja el diagrama de flujo y escribe "Mantenimiento Preventivo" en tu bitácora.
+    <!-- PANTALLA 2: MENÚ PRINCIPAL -->
+    <div id="screen-dashboard" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons">dashboard</i> Panel de Control</div>
+            <span style="background: #FFEBEE; color: var(--alert-red); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                <i class="material-icons" style="font-size: 1rem;">notifications</i> 1 Alerta
+            </span>
+        </div>
+        
+        <h2 style="font-size: 1.5rem; margin-bottom: 20px;">¿Qué quieres investigar hoy?</h2>
+
+        <div class="grid-menu">
+            <!-- Módulo Inglés -->
+            <div class="module-card" onclick="navTo('screen-english')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#AB47BC, #7B1FA2); -webkit-background-clip: text;">public</i>
+                <h4>Global Connection</h4>
+                <span class="tag info">Inglés</span>
             </div>
 
-            <p>El sifón tiene una burbuja de aire bloqueando el flujo. ¡Usa el micrófono!</p>
-            <p><strong>Instrucción:</strong> Sopla fuerte en el micrófono de tu celular para purgar la tubería.</p>
-            
-            <div id="mic-visualizer"><div id="mic-bar"></div></div>
-            <p id="mic-status">Presión: 0%</p>
-            
-            <button class="btn" id="btn-mic-start" onclick="initMic()">Activar Sensor de Aire</button>
+            <!-- Módulo Tecnología -->
+            <div class="module-card" onclick="navTo('screen-tech')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#EF5350, #C62828); -webkit-background-clip: text;">build</i>
+                <h4>Soluciones</h4>
+                <span class="tag alert">¡Requiere Atención!</span>
+            </div>
+
+            <!-- Módulo Biología -->
+            <div class="module-card" onclick="navTo('screen-bio')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#66BB6A, #2E7D32); -webkit-background-clip: text;">history_edu</i>
+                <h4>Saberes Ancestrales</h4>
+                <span class="tag info">Biología</span>
+            </div>
+
+            <!-- Módulo Cámara -->
+            <div class="module-card" onclick="navTo('screen-cam')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#42A5F5, #1565C0); -webkit-background-clip: text;">photo_camera</i>
+                <h4>Evidencia</h4>
+                <span class="tag info">Registro</span>
+            </div>
         </div>
-        <button class="btn" onclick="goHome()">Volver</button>
+
+        <div class="notebook-note" style="margin-top: auto;">
+            <strong><i class="material-icons">menu_book</i> Misión del Día:</strong>
+            Mantén tu libreta a mano. Necesitarás anotar palabras en inglés, dibujar soluciones y comparar la historia para avanzar.
+        </div>
     </div>
 
-    <!-- MÓDULO PLANTAS (CÁMARA) -->
-    <div id="screen-plants" class="screen">
-        <div class="hud-panel">
-            <h3>🌿 Diagnóstico Vegetal</h3>
-            <span class="status-badge critical">DEFICIENCIA DETECTADA</span>
-
-            <div class="notebook-instruction">
-                <strong>LIBRETA:</strong> Investiga las señales de falta de Hierro en hojas. Dibuja una hoja con clorosis en tu libreta y etiquétala.
-            </div>
-
-            <p>Sube la evidencia visual a la base de datos central.</p>
-            
-            <video id="camera-feed" autoplay playsinline></video>
-            <canvas id="camera-canvas" style="display:none;"></canvas>
-            <img id="photo-preview" style="display:none; width: 100%; border-radius: 10px; margin-top: 10px;">
-
-            <button class="btn" id="btn-cam" onclick="initCamera()">📸 Escanear Libreta</button>
-            <button class="btn" id="btn-capture" style="display:none;" onclick="capturePhoto()">Capturar</button>
-            <button class="btn" id="btn-submit-plant" style="display:none;" onclick="validatePlant()">Enviar Análisis</button>
+    <!-- PANTALLA: INGLÉS -->
+    <div id="screen-english" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color: #7B1FA2;">school</i> Inglés</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
         </div>
-        <button class="btn" onclick="goHome()">Volver</button>
+
+        <div class="notebook-note">
+            <strong><i class="material-icons">edit</i> Activity (Notebook):</strong>
+            1. Lee el texto de abajo.<br>
+            2. Escribe en tu libreta 3 palabras clave sobre "Sustentabilidad".<br>
+            3. Traduce la frase "closed-loop system".
+        </div>
+
+        <div class="panel">
+            <h3 style="color: #7B1FA2; font-size: 1.1rem; margin-top: 0;">Nota de Campo: Sustainable Labs</h3>
+            <div class="reading-text">
+                "Aquaponics is a sustainable method of food production. It combines aquaculture (raising fish) and hydroponics (growing plants without soil).<br><br>
+                In this <strong>closed-loop system</strong>, fish waste provides an organic food source for the plants, and the plants filter the water for the fish."
+            </div>
+            
+            <p style="font-weight: bold; margin-top: 25px;">Pregunta de Repaso:</p>
+            <p>According to the text, what is the function of the plants?</p>
+            
+            <!-- Botones como opciones limpias -->
+            <button class="btn outline" onclick="checkEnglish(false)" style="justify-content: flex-start; text-align: left;">A) They provide food for fish</button>
+            <button class="btn outline" onclick="checkEnglish(true)" style="justify-content: flex-start; text-align: left;">B) They filter the water</button>
+            <button class="btn outline" onclick="checkEnglish(false)" style="justify-content: flex-start; text-align: left;">C) They consume soil</button>
+        </div>
     </div>
 
-    <!-- MÓDULO AGUA (LÓGICA) -->
-    <div id="screen-water" class="screen">
-        <div class="hud-panel">
-            <h3>💧 Química del Agua</h3>
-            <span class="status-badge critical">ALERTA DE AMONIO</span>
+    <!-- PANTALLA: TECNOLOGÍA -->
+    <div id="screen-tech" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color: #C62828;">build</i> Tecnología</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
+        </div>
 
-            <div class="notebook-instruction">
-                <strong>LIBRETA:</strong> Escribe la tabla de parámetros ideales: pH, Temp, Nitratos para Tilapia.
+        <div class="notebook-note">
+            <strong><i class="material-icons">edit</i> Actividad (Tecnología):</strong>
+            Identifica el problema (Bomba atascada).<br>
+            Investiga 2 soluciones y escríbelas. Selecciona la mejor según criterios de "Sustentabilidad" y "Costo".
+        </div>
+
+        <div class="panel">
+            <div style="background: #FFEBEE; color: #C62828; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
+                <i class="material-icons">error</i> ALERTA: Flujo de agua detenido.
+            </div>
+            <p><strong>Causa:</strong> Acumulación de residuos en el impulsor.</p>
+            <p style="margin-top: 25px;">Selecciona tu estrategia:</p>
+
+            <div class="choice-card" onclick="selectTech(1, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Opción A: Químicos Fuertes</strong>
+                    <div style="font-size:0.85em; color:#78909C;">Rápido, pero tóxico para los peces.</div>
+                </div>
             </div>
 
-            <p>Calibrar sensores. Selecciona el rango de pH seguro para la mayoría de sistemas acuapónicos:</p>
-            
-            <select id="ph-selector" style="width: 100%; padding: 10px; margin: 10px 0; background: #333; color: white;">
-                <option value="0">Seleccionar...</option>
-                <option value="4">Ácido (4.0 - 5.0)</option>
-                <option value="7">Neutro/Ideal (6.8 - 7.2)</option>
-                <option value="9">Alcalino (8.5 - 9.0)</option>
+            <div class="choice-card" onclick="selectTech(2, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Opción B: Comprar Bomba Nueva</strong>
+                    <div style="font-size:0.85em; color:#78909C;">Muy costoso. Genera basura electrónica.</div>
+                </div>
+            </div>
+
+            <div class="choice-card" onclick="selectTech(3, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Opción C: Mantenimiento Manual</strong>
+                    <div style="font-size:0.85em; color:#78909C;">Limpiar y reusar. (Sostenible y Gratis)</div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="validateTech()" style="margin-top: 20px;">Aplicar Solución</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA: BIOLOGÍA -->
+    <div id="screen-bio" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color: #2E7D32;">spa</i> Biología</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
+        </div>
+
+        <div class="notebook-note">
+            <strong><i class="material-icons">edit</i> Actividad (Biología):</strong>
+            Dibuja una "Chinampa" y nuestro sistema "Acuapónico". Une con líneas los elementos que cumplen la misma función.
+        </div>
+
+        <div class="panel">
+            <h3 style="font-size: 1.1rem; margin-top: 0; color: #2E7D32;">Conexión Histórica</h3>
+            <p>Relaciona el elemento ancestral con su equivalente moderno.</p>
+
+            <div class="comparison-container">
+                <div class="bio-box ancient">
+                    <span style="color:#EF6C00; font-weight: 800; display: block; margin-bottom: 5px;">CHINAMPA (Azteca)</span>
+                    <div style="font-weight:bold; color: #5D4037;">Lodo del lago</div>
+                </div>
+                <div class="arrow-divider"><i class="material-icons">arrow_forward</i></div>
+                <div class="bio-box modern">
+                    <span style="color:#0277BD; font-weight: 800; display: block; margin-bottom: 5px;">ACUAPONÍA (Actual)</span>
+                    <div id="bio-target" style="font-weight:bold; color: #0277BD;">[ ??? ]</div>
+                </div>
+            </div>
+
+            <p style="margin-top: 25px;">Selecciona el equivalente:</p>
+            <select id="bio-selector">
+                <option value="0">Seleccionar componente...</option>
+                <option value="1">Bomba de agua (Flujo)</option>
+                <option value="2">Desechos de peces (Nutrientes)</option>
+                <option value="3">Grava volcánica (Sustrato)</option>
             </select>
 
-            <button class="btn" onclick="checkWater()">Calibrar</button>
+            <button class="btn" onclick="validateBio()">Verificar Relación</button>
         </div>
-        <button class="btn" onclick="goHome()">Volver</button>
     </div>
 
-     <!-- MÓDULO PECES (SONIDO) -->
-     <div id="screen-fish" class="screen">
-        <div class="hud-panel">
-            <h3>🐟 Monitor de Tanque</h3>
-            <p>Escucha el sonido del tanque. ¿Detectas anomalías?</p>
-            
-            <button class="btn" onclick="playSound()">🔊 Reproducir Audio del Tanque</button>
-            
-            <div class="notebook-instruction">
-                <strong>LIBRETA:</strong> Investiga: ¿Cuánta proteína necesita un alevín vs un adulto? Anótalo.
-            </div>
-
-            <p>Diagnóstico:</p>
-            <button class="btn" onclick="alert('Incorrecto. El sonido es de agua fluyendo, lo cual es bueno. El problema es la comida.')">Bomba Rota</button>
-            <button class="btn" onclick="finishFish()">Falta de Oxígeno</button>
+    <!-- PANTALLA: CÁMARA -->
+    <div id="screen-cam" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color: #0277BD;">photo_camera</i> Evidencia</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
         </div>
-        <button class="btn" onclick="goHome()">Volver</button>
+        <div class="panel">
+            <p>Toma una foto a tu libreta para guardar tus dibujos y apuntes.</p>
+            
+            <div style="background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; position: relative; min-height: 300px;">
+                <video id="camera-feed" autoplay playsinline style="width:100%; height: 300px; object-fit: cover; display:none;"></video>
+                
+                <div id="camera-placeholder" style="height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; background: #37474F;">
+                    <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">linked_camera</i>
+                    <p>Cámara apagada</p>
+                </div>
+            </div>
+            
+            <button class="btn blue" id="btn-cam-open" onclick="initCamera()"><i class="material-icons">videocam</i> Activar Cámara</button>
+            <button class="btn" onclick="navTo('screen-dashboard')" style="margin-top: 10px;"><i class="material-icons">check</i> Guardar y Salir</button>
+        </div>
+    </div>
+
+    <!-- MODAL SUCCESS -->
+    <div id="modal-success" style="position:fixed; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100; backdrop-filter: blur(5px); background: rgba(0,0,0,0.3);">
+        <div style="background: white; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 85%; max-width: 350px; animation: fadeIn 0.3s ease-out;">
+            <div style="background: #E8F5E9; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
+                <i class="material-icons" style="font-size: 3rem; color: var(--primary-green);">thumb_up</i>
+            </div>
+            <h2 style="color:var(--text-color); margin: 10px 0;">¡Excelente!</h2>
+            <p id="success-msg" style="color: #546E7A; margin-bottom: 20px;">Actividad completada.</p>
+            <button class="btn" onclick="closeModal()">Continuar</button>
+        </div>
     </div>
 
     <script>
-        // --- NAVEGACIÓN ---
-        function showScreen(id) {
+        // --- BOOT ANIMATION ---
+        window.onload = () => {
+            let width = 0;
+            const bar = document.getElementById('boot-bar');
+            document.body.addEventListener('click', () => { playSound('click'); }, {once:true});
+
+            const interval = setInterval(() => {
+                width += 4; 
+                bar.style.width = width + '%';
+                if(width >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        navTo('screen-dashboard');
+                        playSound('success'); 
+                    }, 500);
+                }
+            }, 30);
+        };
+
+        // --- NAVIGATION & AUDIO (Sonidos más suaves) ---
+        let audioCtx;
+        function playSound(type) {
+            if(!audioCtx) {
+                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } 
+                catch(e) { return; }
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            switch(type) {
+                case 'click': // Pop suave
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                    break;
+                case 'success': // Campanilla agradable
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Do
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                    
+                    // Segunda nota armónica
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.frequency.setValueAtTime(1046.5, audioCtx.currentTime + 0.1); // Do agudo
+                    gain2.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.1);
+                    gain2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6);
+                    
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                    osc2.start(audioCtx.currentTime + 0.1); osc2.stop(audioCtx.currentTime + 0.6);
+                    break;
+                case 'error': // Sonido "Uh-oh" suave
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                    break;
+            }
+        }
+
+        function navTo(id) {
+            stopCam();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            stopMedia(); // Detener cámara/mic al cambiar de pantalla
+            playSound('click');
         }
 
-        function startGame() { showScreen('screen-menu'); }
-        function goHome() { showScreen('screen-menu'); }
-        function loadModule(module) { showScreen('screen-' + module); }
-
-        function stopMedia() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
+        function showSuccess(msg) {
+            document.getElementById('success-msg').innerText = msg;
+            document.getElementById('modal-success').style.display = 'flex';
+            playSound('success');
+            if(navigator.vibrate) navigator.vibrate([50]);
+        }
+        function closeModal() {
+            document.getElementById('modal-success').style.display = 'none';
+            navTo('screen-dashboard');
         }
 
-        let currentStream = null;
-
-        // --- MÓDULO INFRAESTRUCTURA (MICRÓFONO) ---
-        let audioContext;
-        let analyser;
-        let microphone;
-        let javascriptNode;
-
-        async function initMic() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                currentStream = stream;
-                audioContext = new AudioContext();
-                analyser = audioContext.createAnalyser();
-                microphone = audioContext.createMediaStreamSource(stream);
-                javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
-
-                analyser.smoothingTimeConstant = 0.8;
-                analyser.fftSize = 1024;
-
-                microphone.connect(analyser);
-                analyser.connect(javascriptNode);
-                javascriptNode.connect(audioContext.destination);
-
-                document.getElementById('btn-mic-start').style.display = 'none';
-
-                javascriptNode.onaudioprocess = function() {
-                    var array = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(array);
-                    var values = 0;
-                    var length = array.length;
-                    for (var i = 0; i < length; i++) { values += array[i]; }
-                    var average = values / length;
-
-                    // Visualización
-                    let percentage = Math.min(average * 2, 100); 
-                    document.getElementById('mic-bar').style.width = percentage + "%";
-                    document.getElementById('mic-status').innerText = "Presión: " + Math.round(percentage) + "%";
-
-                    // WIN CONDITION
-                    if (percentage > 80) {
-                        alert("¡TUBO DESPEJADO! Flujo de agua restablecido.");
-                        stopMedia();
-                        goHome();
-                    }
-                }
-            } catch (err) {
-                alert("Error de micrófono: " + err + ". Asegúrate de usar HTTPS.");
+        // --- INGLÉS ---
+        function checkEnglish(isCorrect) {
+            if(isCorrect) {
+                showSuccess("¡Correcto! Las plantas filtran el agua.");
+            } else {
+                playSound('error');
+                alert("Inténtalo de nuevo. Lee la frase: 'plants filter the water'.");
             }
         }
 
-        // --- MÓDULO PLANTAS (CÁMARA) ---
+        // --- TECNOLOGÍA ---
+        let techSelection = 0;
+        function selectTech(id, el) {
+            techSelection = id;
+            document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            playSound('click');
+        }
+
+        function validateTech() {
+            if(techSelection === 3) {
+                showSuccess("¡Gran elección! Es ecológico, barato y eficiente.");
+            } else if (techSelection === 1) {
+                playSound('error');
+                alert("Cuidado: Los químicos dañarían a los peces.");
+            } else if (techSelection === 2) {
+                playSound('error');
+                alert("No es necesario gastar tanto dinero. Hay una opción mejor.");
+            } else {
+                alert("Por favor selecciona una opción.");
+            }
+        }
+
+        // --- BIOLOGÍA ---
+        document.getElementById('bio-selector').addEventListener('change', function() {
+            const targetBox = document.getElementById('bio-target');
+            const selectedText = this.options[this.selectedIndex].text;
+            if(this.value !== "0") {
+                 targetBox.innerText = selectedText.split('(')[0].trim();
+            } else {
+                 targetBox.innerText = "[ ??? ]";
+            }
+            playSound('click');
+        });
+
+        function validateBio() {
+            const val = document.getElementById('bio-selector').value;
+            if(val === "2") {
+                showSuccess("¡Exacto! Los desechos orgánicos alimentan a las plantas.");
+            } else {
+                playSound('error');
+                alert("Piénsalo bien: ¿Qué usaban los Aztecas como fertilizante?");
+            }
+        }
+
+        // --- CÁMARA ---
         async function initCamera() {
             try {
                 const video = document.getElementById('camera-feed');
+                const placeholder = document.getElementById('camera-placeholder');
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                currentStream = stream;
                 video.srcObject = stream;
                 video.style.display = 'block';
-                document.getElementById('btn-cam').style.display = 'none';
-                document.getElementById('btn-capture').style.display = 'block';
-            } catch (err) {
-                alert("Error de cámara: " + err);
+                placeholder.style.display = 'none';
+                document.getElementById('btn-cam-open').style.display = 'none';
+                playSound('click');
+            } catch(e) { 
+                alert("Necesitamos permiso de cámara (asegúrate de usar HTTPS)."); 
             }
         }
-
-        function capturePhoto() {
+        function stopCam() {
             const video = document.getElementById('camera-feed');
-            const canvas = document.getElementById('camera-canvas');
-            const preview = document.getElementById('photo-preview');
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            preview.src = canvas.toDataURL('image/png');
-            preview.style.display = 'block';
-            video.style.display = 'none';
-            
-            stopMedia();
-            document.getElementById('btn-capture').style.display = 'none';
-            document.getElementById('btn-submit-plant').style.display = 'block';
-        }
-
-        function validatePlant() {
-            // Simulamos un análisis de IA
-            const btn = document.getElementById('btn-submit-plant');
-            btn.innerText = "Analizando...";
-            setTimeout(() => {
-                alert("ANÁLISIS COMPLETADO: Diagrama válido. Deficiencia de Hierro confirmada. Nutrientes añadidos.");
-                goHome();
-            }, 1500);
-        }
-
-        // --- MÓDULO AGUA ---
-        function checkWater() {
-            const val = document.getElementById('ph-selector').value;
-            if (val === "7") {
-                alert("¡CORRECTO! El rango 6.8 - 7.2 permite que peces y bacterias coexistan.");
-                goHome();
-            } else {
-                alert("PELIGRO: Ese pH mataría a las bacterias nitrificantes o a los peces.");
+            const placeholder = document.getElementById('camera-placeholder');
+            if(video.srcObject) {
+                video.srcObject.getTracks().forEach(t => t.stop());
+                video.srcObject = null;
+                video.style.display = 'none';
+                placeholder.style.display = 'flex';
+                document.getElementById('btn-cam-open').style.display = 'flex';
             }
-        }
-
-        // --- MÓDULO PECES (AUDIO) ---
-        function playSound() {
-            // Oscilador simple para simular sonido de burbujas
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, ctx.currentTime); // Sonido grave (bomba)
-            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 2);
-            
-            gainNode.gain.setValueAtTime(0.5, ctx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
-
-            osc.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            osc.start();
-            osc.stop(ctx.currentTime + 2);
-        }
-
-        function finishFish() {
-            alert("Correcto. El sonido es normal, pero los peces boquean en la superficie. Falta Oxígeno disuelto.");
-            goHome();
         }
 
     </script>
