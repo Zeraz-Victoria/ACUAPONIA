@@ -6,7 +6,6 @@
     <title>Eco-Huerto: Laboratorio Digital</title>
     <!-- Fuentes e Iconos -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Fuente amigable y redondeada -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,7 +15,8 @@
             --water-blue: #039BE5;
             --sun-yellow: #FFB300;
             --alert-red: #E53935;
-            --bg-color: #F1F8E9; /* Verde muy pálido */
+            --energy-orange: #FF5722; /* Para Educación Física */
+            --bg-color: #F1F8E9;
             --card-bg: #FFFFFF;
             --text-color: #37474F;
             --shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -33,18 +33,15 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            
-            /* Fondo de naturaleza sutil */
             background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2727&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
 
-        /* Capa blanca semitransparente sobre la imagen de fondo para que el texto se lea bien */
         body::before {
             content: "";
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9); /* Un poco más opaco para legibilidad */
             z-index: -1;
         }
 
@@ -57,193 +54,98 @@
             padding: 20px;
             overflow-y: auto;
             z-index: 10;
+            padding-bottom: 80px; /* Espacio para scroll */
         }
         .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
 
-        h1, h2, h3 { 
-            color: var(--dark-green);
-            margin: 0.5em 0; 
-            font-weight: 900;
-        }
+        h1, h2, h3 { color: var(--dark-green); margin: 0.5em 0; font-weight: 900; }
         
         .header-bar {
             display: flex; justify-content: space-between; align-items: center;
             background: white;
             padding: 15px 20px;
-            margin: -20px -20px 20px -20px; /* Expande para tocar bordes */
+            margin: -20px -20px 20px -20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
+            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
+            position: sticky; top: 0; z-index: 20;
         }
 
-        .header-title {
-            font-size: 1.2rem;
-            color: var(--dark-green);
-            font-weight: 800;
-            display: flex; align-items: center; gap: 8px;
-        }
+        .header-title { font-size: 1.2rem; color: var(--dark-green); font-weight: 800; display: flex; align-items: center; gap: 8px; }
 
-        /* Botones Amigables */
+        /* Botones */
         .btn {
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            padding: 15px;
-            margin: 10px 0;
-            font-weight: 700;
-            border-radius: 12px; /* Bordes redondeados */
-            cursor: pointer;
+            background: var(--primary-green); color: white; border: none; padding: 15px; margin: 10px 0;
+            font-weight: 700; border-radius: 12px; cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 1rem;
-            font-family: 'Nunito', sans-serif;
-            box-shadow: 0 4px 0 #388E3C; /* Efecto 3D simple */
-            width: 100%;
+            font-size: 1rem; font-family: 'Nunito', sans-serif;
+            box-shadow: 0 4px 0 #388E3C; width: 100%;
         }
-        .btn:active { 
-            transform: translateY(4px); 
-            box-shadow: none; 
-        }
-        
-        .btn.red { background: var(--alert-red); box-shadow: 0 4px 0 #C62828; }
-        .btn.blue { background: var(--water-blue); box-shadow: 0 4px 0 #0277BD; }
-        .btn.yellow { background: var(--sun-yellow); color: #3e2723; box-shadow: 0 4px 0 #FF8F00; }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
         .btn.outline { background: white; color: var(--text-color); border: 2px solid #ddd; box-shadow: none; }
+        .btn.orange { background: var(--energy-orange); box-shadow: 0 4px 0 #D84315; }
 
-        /* Paneles tipo Tarjeta */
+        /* Paneles */
         .panel {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(0,0,0,0.05);
+            background: var(--card-bg); padding: 20px; border-radius: 20px;
+            margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05);
         }
 
-        /* Notas de Libreta */
+        /* Notas */
         .notebook-note {
-            background: #FFF9C4; /* Amarillo post-it suave */
-            border-left: 5px solid var(--sun-yellow);
-            padding: 15px;
-            margin: 15px 0;
-            font-size: 0.95em;
-            color: #5D4037;
-            border-radius: 8px;
-            position: relative;
+            background: #FFF9C4; border-left: 5px solid var(--sun-yellow);
+            padding: 15px; margin: 15px 0; font-size: 0.95em; color: #5D4037; border-radius: 8px;
         }
         .notebook-note strong { display: block; margin-bottom: 5px; color: #F57F17; }
-        .notebook-note i { color: #F57F17; vertical-align: middle; margin-right: 5px; }
 
-        /* --- MENÚ DE GRID --- */
+        /* --- SECCIONES DEL GRID --- */
+        .section-title {
+            font-size: 1rem; color: #78909C; margin: 20px 0 10px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; border-bottom: 2px solid #CFD8DC; padding-bottom: 5px;
+        }
+
         .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         
         .module-card {
-            background: white;
-            padding: 20px 10px; text-align: center;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-            cursor: pointer; transition: 0.3s;
-            border: 2px solid transparent;
+            background: white; padding: 15px 10px; text-align: center;
+            border-radius: 20px; box-shadow: var(--shadow); cursor: pointer; transition: 0.3s;
+            border: 2px solid transparent; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
-        .module-card:hover { 
-            transform: translateY(-5px);
-            border-color: var(--primary-green);
-        }
-        .module-card i { 
-            font-size: 3rem; display: block; margin-bottom: 10px; 
-            /* Gradiente en el texto del icono */
-            background: -webkit-linear-gradient(#66BB6A, #2E7D32);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .module-card h4 { margin: 5px 0; color: var(--text-color); font-size: 0.9rem; }
-        .tag { 
-            font-size: 0.7em; padding: 3px 8px; border-radius: 10px; font-weight: bold; display: inline-block;
-        }
-        .tag.alert { background: #FFEBEE; color: var(--alert-red); }
-        .tag.info { background: #E1F5FE; color: var(--water-blue); }
-
-        /* Texto de lectura */
-        .reading-text {
-            background: #FAFAFA;
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px dashed #BDBDBD;
-            margin-bottom: 15px;
-            line-height: 1.6;
-            font-size: 1rem;
-            color: #455A64;
-        }
-
-        /* Opciones de selección */
-        .choice-card {
-            background: white;
-            border: 2px solid #E0E0E0;
-            padding: 15px; margin-bottom: 10px;
-            border-radius: 12px;
-            cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .choice-card:hover { border-color: var(--primary-green); background: #F1F8E9; }
-        .choice-card.selected { 
-            border-color: var(--primary-green); 
-            background: #E8F5E9;
-            box-shadow: 0 0 0 2px var(--primary-green);
-        }
-        .choice-circle {
-            width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ccc; flex-shrink: 0;
-        }
-        .choice-card.selected .choice-circle {
-            border-color: var(--primary-green); background: var(--primary-green);
-        }
-
-        /* Comparación Bio */
-        .comparison-container { display: flex; justify-content: space-between; align-items: center; margin: 20px 0; gap: 10px; }
-        .bio-box { 
-            flex: 1; padding: 15px; 
-            background: white;
-            border-radius: 15px;
-            text-align: center; font-size: 0.9em; 
-            box-shadow: var(--shadow);
-            border: 2px solid #fff;
-        }
-        .bio-box.ancient { border-color: #FFB74D; background: #FFF3E0; }
-        .bio-box.modern { border-color: #4FC3F7; background: #E1F5FE; }
+        .module-card:hover { transform: translateY(-5px); border-color: var(--primary-green); }
+        .module-card i { font-size: 2.5rem; margin-bottom: 10px; background: -webkit-linear-gradient(#66BB6A, #2E7D32); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .arrow-divider { font-size: 1.5em; color: #BDBDBD; }
+        .tag { font-size: 0.65em; padding: 3px 8px; border-radius: 10px; font-weight: bold; margin-top: 5px; }
+        .tag.info { background: #E1F5FE; color: var(--water-blue); }
+        .tag.alert { background: #FFEBEE; color: var(--alert-red); }
+        .tag.phys { background: #FBE9E7; color: var(--energy-orange); }
 
-        select {
-            width: 100%; padding: 12px; 
-            background: white; color: var(--text-color); 
-            border: 2px solid #E0E0E0; border-radius: 12px; margin-bottom: 15px;
-            font-family: 'Nunito', sans-serif; font-size: 1rem;
-        }
-        select:focus { outline: none; border-color: var(--primary-green); }
+        /* Inputs para Bitácora */
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; font-size: 0.9rem; color: #546E7A; margin-bottom: 5px; font-weight: bold; }
+        .input-group input { width: 100%; padding: 12px; border: 2px solid #CFD8DC; border-radius: 10px; font-family: 'Nunito'; font-size: 1rem; }
+        .input-group input:focus { border-color: var(--primary-green); outline: none; }
+
+        /* Checklist Actividad Física */
+        .phys-check { display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #EEEEEE; }
+        .phys-check input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--energy-orange); }
 
         /* Animaciones */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modal Exito */
-        #modal-success {
-            background: rgba(255, 255, 255, 0.95);
-        }
+        /* Modal */
+        #modal-success { background: rgba(255, 255, 255, 0.95); }
 
     </style>
 </head>
 <body>
 
-    <!-- PANTALLA 1: INICIO (Friendly) -->
+    <!-- PANTALLA 1: INICIO -->
     <div id="screen-boot" class="screen active" style="justify-content: center; align-items: center; text-align: center;">
         <div style="background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px;">
             <i class="material-icons" style="font-size: 5rem; color: var(--primary-green);">eco</i>
-            <h1 style="font-size: 2.5rem; margin: 10px 0;">Eco-Huerto</h1>
-            <p style="color: #78909C; margin-bottom: 30px;">Cargando Laboratorio Digital...</p>
-            
-            <p style="font-size: 0.8rem; color: #B0BEC5; font-weight: bold;">SINCRONIZANDO: INGLÉS • TECNOLOGÍA • BIOLOGÍA</p>
-
-            <!-- Barra de carga amigable -->
-            <div style="width: 100%; height: 10px; background: #E0E0E0; border-radius: 5px; overflow: hidden; margin-top: 15px;">
-                <div id="boot-bar" style="width: 0%; height: 100%; background: var(--primary-green); transition: width 0.1s; border-radius: 5px;"></div>
+            <h1 style="font-size: 2.2rem; margin: 10px 0;">Eco-Huerto</h1>
+            <p style="color: #78909C; margin-bottom: 20px;">Gestión Integral & Bienestar</p>
+            <div style="width: 100%; height: 8px; background: #E0E0E0; border-radius: 4px; overflow: hidden;">
+                <div id="boot-bar" style="width: 0%; height: 100%; background: var(--primary-green); transition: width 0.1s;"></div>
             </div>
         </div>
     </div>
@@ -252,372 +154,346 @@
     <div id="screen-dashboard" class="screen">
         <div class="header-bar">
             <div class="header-title"><i class="material-icons">dashboard</i> Panel de Control</div>
-            <span style="background: #FFEBEE; color: var(--alert-red); padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px;">
-                <i class="material-icons" style="font-size: 1rem;">notifications</i> 1 Alerta
-            </span>
+            <div style="font-size: 0.8rem; font-weight: bold; color: var(--dark-green);">Semana 9-16</div>
         </div>
         
-        <h2 style="font-size: 1.5rem; margin-bottom: 20px;">¿Qué quieres investigar hoy?</h2>
+        <!-- FASE 1: INVESTIGACIÓN (Compacto) -->
+        <div class="section-title">Fase 1: Investigación</div>
+        <div class="grid-menu" style="grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px;">
+            <div class="module-card" onclick="navTo('screen-english')" style="padding: 10px;">
+                <i class="material-icons" style="font-size: 1.5rem; margin:0;">public</i>
+                <span style="font-size: 0.7rem;">Inglés</span>
+            </div>
+            <div class="module-card" onclick="navTo('screen-tech')" style="padding: 10px;">
+                <i class="material-icons" style="font-size: 1.5rem; margin:0;">build</i>
+                <span style="font-size: 0.7rem;">Tecnología</span>
+            </div>
+            <div class="module-card" onclick="navTo('screen-bio')" style="padding: 10px;">
+                <i class="material-icons" style="font-size: 1.5rem; margin:0;">history_edu</i>
+                <span style="font-size: 0.7rem;">Biología</span>
+            </div>
+            <div class="module-card" onclick="navTo('screen-cam')" style="padding: 10px;">
+                <i class="material-icons" style="font-size: 1.5rem; margin:0;">camera_alt</i>
+                <span style="font-size: 0.7rem;">Evidencia</span>
+            </div>
+        </div>
 
+        <!-- FASE 2: CAMPO Y MONITOREO -->
+        <div class="section-title">Fase 2: Trabajo de Campo</div>
         <div class="grid-menu">
-            <!-- Módulo Inglés -->
-            <div class="module-card" onclick="navTo('screen-english')">
-                <i class="material-icons" style="background: -webkit-linear-gradient(#AB47BC, #7B1FA2); -webkit-background-clip: text;">public</i>
-                <h4>Global Connection</h4>
-                <span class="tag info">Inglés</span>
+            <!-- Módulo Siembra -->
+            <div class="module-card" onclick="navTo('screen-sowing')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#8D6E63, #5D4037); -webkit-background-clip: text;">local_florist</i>
+                <h4>Ciclo de Vida</h4>
+                <span class="tag info">Siembra/Trasplante</span>
             </div>
 
-            <!-- Módulo Tecnología -->
-            <div class="module-card" onclick="navTo('screen-tech')">
-                <i class="material-icons" style="background: -webkit-linear-gradient(#EF5350, #C62828); -webkit-background-clip: text;">build</i>
-                <h4>Soluciones</h4>
-                <span class="tag alert">¡Requiere Atención!</span>
+            <!-- Módulo Bitácora -->
+            <div class="module-card" onclick="navTo('screen-logbook')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#29B6F6, #0288D1); -webkit-background-clip: text;">assignment</i>
+                <h4>Bitácora</h4>
+                <span class="tag alert">Registro Datos</span>
             </div>
 
-            <!-- Módulo Biología -->
-            <div class="module-card" onclick="navTo('screen-bio')">
-                <i class="material-icons" style="background: -webkit-linear-gradient(#66BB6A, #2E7D32); -webkit-background-clip: text;">history_edu</i>
-                <h4>Saberes Ancestrales</h4>
-                <span class="tag info">Biología</span>
+            <!-- Módulo Rutina Diaria -->
+            <div class="module-card" onclick="navTo('screen-daily')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#FFA726, #F57C00); -webkit-background-clip: text;">set_meal</i>
+                <h4>Rutina Diaria</h4>
+                <span class="tag info">Peces/Limpieza</span>
             </div>
 
-            <!-- Módulo Cámara -->
-            <div class="module-card" onclick="navTo('screen-cam')">
-                <i class="material-icons" style="background: -webkit-linear-gradient(#42A5F5, #1565C0); -webkit-background-clip: text;">photo_camera</i>
-                <h4>Evidencia</h4>
-                <span class="tag info">Registro</span>
+            <!-- Módulo Bienestar Físico (Ed. Física) -->
+            <div class="module-card" onclick="navTo('screen-phys-ed')">
+                <i class="material-icons" style="background: -webkit-linear-gradient(#FF7043, #D84315); -webkit-background-clip: text;">directions_run</i>
+                <h4>Bienestar Físico</h4>
+                <span class="tag phys">Ed. Física</span>
             </div>
-        </div>
-
-        <div class="notebook-note" style="margin-top: auto;">
-            <strong><i class="material-icons">menu_book</i> Misión del Día:</strong>
-            Mantén tu libreta a mano. Necesitarás anotar palabras en inglés, dibujar soluciones y comparar la historia para avanzar.
         </div>
     </div>
 
-    <!-- PANTALLA: INGLÉS -->
+    <!-- MÓDULO: CICLO DE VIDA (Siembra y Trasplante) -->
+    <div id="screen-sowing" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color:#5D4037;">local_florist</i> Cultivo</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px;">Volver</button>
+        </div>
+
+        <div class="notebook-note">
+            <strong><i class="material-icons">edit</i> Actividad:</strong>
+            Observa tus semilleros. Antes de trasplantar al sistema, verifica estos 3 criterios.
+        </div>
+
+        <div class="panel">
+            <h3>Lista de Verificación de Trasplante</h3>
+            <p style="font-size: 0.9rem; color: #78909C;">Marca SOLO si se cumple en la vida real:</p>
+            
+            <div class="phys-check">
+                <input type="checkbox" id="check-leaves">
+                <label>Tiene al menos 2 pares de hojas verdaderas.</label>
+            </div>
+            <div class="phys-check">
+                <input type="checkbox" id="check-roots">
+                <label>Raíces blancas visibles saliendo del sustrato.</label>
+            </div>
+            <div class="phys-check">
+                <input type="checkbox" id="check-height">
+                <label>Altura mayor a 5 cm.</label>
+            </div>
+
+            <button class="btn" onclick="validateSowing()">Validar Trasplante</button>
+        </div>
+    </div>
+
+    <!-- MÓDULO: BITÁCORA DIGITAL (Monitoreo de Agua) -->
+    <div id="screen-logbook" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color:#0288D1;">assignment</i> Bitácora</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px;">Volver</button>
+        </div>
+
+        <div class="panel">
+            <h3>Registro Semanal de Calidad</h3>
+            <p>Introduce los datos obtenidos con el kit de pruebas:</p>
+
+            <div class="input-group">
+                <label>pH del Agua (Ideal: 6.8 - 7.2)</label>
+                <input type="number" id="input-ph" placeholder="Ej: 7.0" step="0.1">
+            </div>
+
+            <div class="input-group">
+                <label>Temperatura (°C)</label>
+                <input type="number" id="input-temp" placeholder="Ej: 24">
+            </div>
+
+            <div class="input-group">
+                <label>Nitritos (NO2) ppm</label>
+                <input type="number" id="input-no2" placeholder="Ej: 0">
+            </div>
+
+            <button class="btn" onclick="validateLogbook()">Registrar Datos</button>
+            <div id="logbook-feedback" style="margin-top: 15px; font-weight: bold; display: none;"></div>
+        </div>
+    </div>
+
+    <!-- MÓDULO: RUTINA DIARIA (Peces) -->
+    <div id="screen-daily" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color:#F57C00;">set_meal</i> Rutina</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px;">Volver</button>
+        </div>
+
+        <div class="panel">
+            <h3>Alimentación & Observación</h3>
+            <p>Observa a los peces durante 5 minutos mientras comen.</p>
+            
+            <div class="choice-card" onclick="selectBehavior(1, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Comen vorazmente</strong>
+                    <div style="font-size:0.85em;">Nadan rápido hacia la comida. (Saludable)</div>
+                </div>
+            </div>
+            <div class="choice-card" onclick="selectBehavior(2, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Nadan de lado / Flotan</strong>
+                    <div style="font-size:0.85em;">Movimientos erráticos. (Alerta Enfermedad)</div>
+                </div>
+            </div>
+            <div class="choice-card" onclick="selectBehavior(3, this)">
+                <div class="choice-circle"></div>
+                <div>
+                    <strong>Rechazan la comida</strong>
+                    <div style="font-size:0.85em;">Comida se queda en el fondo. (Estrés/Frío)</div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="validateDaily()">Guardar Observación</button>
+        </div>
+    </div>
+
+    <!-- MÓDULO: BIENESTAR FÍSICO (PDA Educación Física) -->
+    <div id="screen-phys-ed" class="screen">
+        <div class="header-bar">
+            <div class="header-title"><i class="material-icons" style="color:#D84315;">directions_run</i> Bienestar</div>
+            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px;">Volver</button>
+        </div>
+
+        <div class="notebook-note" style="background: #FBE9E7; border-color: #FF5722;">
+            <strong><i class="material-icons" style="color: #FF5722;">favorite</i> Autoevaluación Física:</strong>
+            El mantenimiento del huerto es actividad física. ¡Tu cuerpo trabaja mientras cuidas la naturaleza!
+        </div>
+
+        <div class="panel">
+            <h3>Registro de Esfuerzo Físico</h3>
+            <p>Selecciona las tareas realizadas hoy:</p>
+            
+            <div class="phys-check">
+                <input type="checkbox" value="Cargar Cubetas (Fuerza Brazos)">
+                <label>Cargar cubetas de agua (Fuerza)</label>
+            </div>
+            <div class="phys-check">
+                <input type="checkbox" value="Limpiar Filtros (Flexibilidad)">
+                <label>Limpieza de filtros (Sentadillas/Flexión)</label>
+            </div>
+            <div class="phys-check">
+                <input type="checkbox" value="Recorrido (Cardio)">
+                <label>Recorrido de inspección (Caminata)</label>
+            </div>
+
+            <p style="margin-top: 20px;">¿Cómo te sientes después de la jornada?</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="btn outline" onclick="physFeel('Energizado')">⚡ Energizado</button>
+                <button class="btn outline" onclick="physFeel('Cansado')">💤 Cansado</button>
+                <button class="btn outline" onclick="physFeel('Relajado')">😌 Relajado</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLAS DE FASE 1 (Mantenidas ocultas por defecto pero accesibles) -->
     <div id="screen-english" class="screen">
-        <div class="header-bar">
-            <div class="header-title"><i class="material-icons" style="color: #7B1FA2;">school</i> Inglés</div>
-            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
-        </div>
-
-        <div class="notebook-note">
-            <strong><i class="material-icons">edit</i> Activity (Notebook):</strong>
-            1. Lee el texto de abajo.<br>
-            2. Escribe en tu libreta 3 palabras clave sobre "Sustentabilidad".<br>
-            3. Traduce la frase "closed-loop system".
-        </div>
-
+        <div class="header-bar"><div class="header-title">Inglés</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px;">X</button></div>
         <div class="panel">
-            <h3 style="color: #7B1FA2; font-size: 1.1rem; margin-top: 0;">Nota de Campo: Sustainable Labs</h3>
-            <div class="reading-text">
-                "Aquaponics is a sustainable method of food production. It combines aquaculture (raising fish) and hydroponics (growing plants without soil).<br><br>
-                In this <strong>closed-loop system</strong>, fish waste provides an organic food source for the plants, and the plants filter the water for the fish."
-            </div>
-            
-            <p style="font-weight: bold; margin-top: 25px;">Pregunta de Repaso:</p>
-            <p>According to the text, what is the function of the plants?</p>
-            
-            <!-- Botones como opciones limpias -->
-            <button class="btn outline" onclick="checkEnglish(false)" style="justify-content: flex-start; text-align: left;">A) They provide food for fish</button>
-            <button class="btn outline" onclick="checkEnglish(true)" style="justify-content: flex-start; text-align: left;">B) They filter the water</button>
-            <button class="btn outline" onclick="checkEnglish(false)" style="justify-content: flex-start; text-align: left;">C) They consume soil</button>
+            <h3>Sustainable Labs</h3>
+            <p>"Aquaponics is a <strong>closed-loop system</strong>. Fish waste feeds plants, plants filter water."</p>
+            <p>Question: What filters the water?</p>
+            <button class="btn outline" onclick="alert('Correct! Plants filter the water.')">A) Plants</button>
+            <button class="btn outline" onclick="alert('Incorrect.')">B) Fish</button>
         </div>
     </div>
-
-    <!-- PANTALLA: TECNOLOGÍA -->
+    
     <div id="screen-tech" class="screen">
-        <div class="header-bar">
-            <div class="header-title"><i class="material-icons" style="color: #C62828;">build</i> Tecnología</div>
-            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
-        </div>
-
-        <div class="notebook-note">
-            <strong><i class="material-icons">edit</i> Actividad (Tecnología):</strong>
-            Identifica el problema (Bomba atascada).<br>
-            Investiga 2 soluciones y escríbelas. Selecciona la mejor según criterios de "Sustentabilidad" y "Costo".
-        </div>
-
-        <div class="panel">
-            <div style="background: #FFEBEE; color: #C62828; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-                <i class="material-icons">error</i> ALERTA: Flujo de agua detenido.
-            </div>
-            <p><strong>Causa:</strong> Acumulación de residuos en el impulsor.</p>
-            <p style="margin-top: 25px;">Selecciona tu estrategia:</p>
-
-            <div class="choice-card" onclick="selectTech(1, this)">
-                <div class="choice-circle"></div>
-                <div>
-                    <strong>Opción A: Químicos Fuertes</strong>
-                    <div style="font-size:0.85em; color:#78909C;">Rápido, pero tóxico para los peces.</div>
-                </div>
-            </div>
-
-            <div class="choice-card" onclick="selectTech(2, this)">
-                <div class="choice-circle"></div>
-                <div>
-                    <strong>Opción B: Comprar Bomba Nueva</strong>
-                    <div style="font-size:0.85em; color:#78909C;">Muy costoso. Genera basura electrónica.</div>
-                </div>
-            </div>
-
-            <div class="choice-card" onclick="selectTech(3, this)">
-                <div class="choice-circle"></div>
-                <div>
-                    <strong>Opción C: Mantenimiento Manual</strong>
-                    <div style="font-size:0.85em; color:#78909C;">Limpiar y reusar. (Sostenible y Gratis)</div>
-                </div>
-            </div>
-
-            <button class="btn" onclick="validateTech()" style="margin-top: 20px;">Aplicar Solución</button>
-        </div>
+        <div class="header-bar"><div class="header-title">Tecnología</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px;">X</button></div>
+        <div class="panel"><h3>Solución de Problemas</h3><p>Bomba atascada: Limpiar (Sostenible) vs Comprar (Caro).</p></div>
     </div>
-
-    <!-- PANTALLA: BIOLOGÍA -->
+    
     <div id="screen-bio" class="screen">
-        <div class="header-bar">
-            <div class="header-title"><i class="material-icons" style="color: #2E7D32;">spa</i> Biología</div>
-            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
-        </div>
-
-        <div class="notebook-note">
-            <strong><i class="material-icons">edit</i> Actividad (Biología):</strong>
-            Dibuja una "Chinampa" y nuestro sistema "Acuapónico". Une con líneas los elementos que cumplen la misma función.
-        </div>
-
-        <div class="panel">
-            <h3 style="font-size: 1.1rem; margin-top: 0; color: #2E7D32;">Conexión Histórica</h3>
-            <p>Relaciona el elemento ancestral con su equivalente moderno.</p>
-
-            <div class="comparison-container">
-                <div class="bio-box ancient">
-                    <span style="color:#EF6C00; font-weight: 800; display: block; margin-bottom: 5px;">CHINAMPA (Azteca)</span>
-                    <div style="font-weight:bold; color: #5D4037;">Lodo del lago</div>
-                </div>
-                <div class="arrow-divider"><i class="material-icons">arrow_forward</i></div>
-                <div class="bio-box modern">
-                    <span style="color:#0277BD; font-weight: 800; display: block; margin-bottom: 5px;">ACUAPONÍA (Actual)</span>
-                    <div id="bio-target" style="font-weight:bold; color: #0277BD;">[ ??? ]</div>
-                </div>
-            </div>
-
-            <p style="margin-top: 25px;">Selecciona el equivalente:</p>
-            <select id="bio-selector">
-                <option value="0">Seleccionar componente...</option>
-                <option value="1">Bomba de agua (Flujo)</option>
-                <option value="2">Desechos de peces (Nutrientes)</option>
-                <option value="3">Grava volcánica (Sustrato)</option>
-            </select>
-
-            <button class="btn" onclick="validateBio()">Verificar Relación</button>
-        </div>
+        <div class="header-bar"><div class="header-title">Biología</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px;">X</button></div>
+        <div class="panel"><h3>Saberes Ancestrales</h3><p>Chinampas (Lodo) = Acuaponía (Desechos).</p></div>
     </div>
 
-    <!-- PANTALLA: CÁMARA -->
     <div id="screen-cam" class="screen">
-        <div class="header-bar">
-            <div class="header-title"><i class="material-icons" style="color: #0277BD;">photo_camera</i> Evidencia</div>
-            <button onclick="navTo('screen-dashboard')" class="btn outline" style="width: auto; padding: 5px 15px; margin:0; font-size: 0.9rem;">Cerrar</button>
-        </div>
+        <div class="header-bar"><div class="header-title">Cámara</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px;">X</button></div>
         <div class="panel">
-            <p>Toma una foto a tu libreta para guardar tus dibujos y apuntes.</p>
-            
-            <div style="background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; position: relative; min-height: 300px;">
-                <video id="camera-feed" autoplay playsinline style="width:100%; height: 300px; object-fit: cover; display:none;"></video>
-                
-                <div id="camera-placeholder" style="height: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; background: #37474F;">
-                    <i class="material-icons" style="font-size: 4rem; opacity: 0.5;">linked_camera</i>
-                    <p>Cámara apagada</p>
-                </div>
-            </div>
-            
-            <button class="btn blue" id="btn-cam-open" onclick="initCamera()"><i class="material-icons">videocam</i> Activar Cámara</button>
-            <button class="btn" onclick="navTo('screen-dashboard')" style="margin-top: 10px;"><i class="material-icons">check</i> Guardar y Salir</button>
+            <video id="camera-feed" autoplay playsinline style="width:100%; height:200px; background:#000; display:none;"></video>
+            <button class="btn" onclick="initCamera()">Activar Cámara</button>
         </div>
     </div>
 
     <!-- MODAL SUCCESS -->
     <div id="modal-success" style="position:fixed; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; justify-content:center; align-items:center; z-index:100; backdrop-filter: blur(5px); background: rgba(0,0,0,0.3);">
-        <div style="background: white; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 85%; max-width: 350px; animation: fadeIn 0.3s ease-out;">
+        <div style="background: white; padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); width: 85%; max-width: 350px;">
             <div style="background: #E8F5E9; width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto;">
-                <i class="material-icons" style="font-size: 3rem; color: var(--primary-green);">thumb_up</i>
+                <i class="material-icons" style="font-size: 3rem; color: var(--primary-green);">check</i>
             </div>
-            <h2 style="color:var(--text-color); margin: 10px 0;">¡Excelente!</h2>
-            <p id="success-msg" style="color: #546E7A; margin-bottom: 20px;">Actividad completada.</p>
+            <h2 id="modal-title" style="color:var(--text-color); margin: 10px 0;">¡Registrado!</h2>
+            <p id="success-msg" style="color: #546E7A; margin-bottom: 20px;">Datos guardados en bitácora.</p>
             <button class="btn" onclick="closeModal()">Continuar</button>
         </div>
     </div>
 
     <script>
-        // --- BOOT ANIMATION ---
+        // --- BOOT ---
         window.onload = () => {
-            let width = 0;
-            const bar = document.getElementById('boot-bar');
-            document.body.addEventListener('click', () => { playSound('click'); }, {once:true});
-
+            let width = 0; const bar = document.getElementById('boot-bar');
             const interval = setInterval(() => {
-                width += 4; 
-                bar.style.width = width + '%';
-                if(width >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        navTo('screen-dashboard');
-                        playSound('success'); 
-                    }, 500);
-                }
+                width += 5; bar.style.width = width + '%';
+                if(width >= 100) { clearInterval(interval); setTimeout(() => navTo('screen-dashboard'), 500); }
             }, 30);
         };
 
-        // --- NAVIGATION & AUDIO (Sonidos más suaves) ---
-        let audioCtx;
-        function playSound(type) {
-            if(!audioCtx) {
-                try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } 
-                catch(e) { return; }
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            switch(type) {
-                case 'click': // Pop suave
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-                    break;
-                case 'success': // Campanilla agradable
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // Do
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
-                    
-                    // Segunda nota armónica
-                    const osc2 = audioCtx.createOscillator();
-                    const gain2 = audioCtx.createGain();
-                    osc2.connect(gain2);
-                    gain2.connect(audioCtx.destination);
-                    osc2.frequency.setValueAtTime(1046.5, audioCtx.currentTime + 0.1); // Do agudo
-                    gain2.gain.setValueAtTime(0.05, audioCtx.currentTime + 0.1);
-                    gain2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6);
-                    
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-                    osc2.start(audioCtx.currentTime + 0.1); osc2.stop(audioCtx.currentTime + 0.6);
-                    break;
-                case 'error': // Sonido "Uh-oh" suave
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.linearRampToValueAtTime(200, audioCtx.currentTime + 0.3);
-                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-                    break;
-            }
-        }
-
         function navTo(id) {
-            stopCam();
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            playSound('click');
+            // Detener cámara si se sale de esa pantalla
+            const video = document.getElementById('camera-feed');
+            if(video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; video.style.display='none'; }
         }
 
-        function showSuccess(msg) {
+        function showSuccess(title, msg) {
+            document.getElementById('modal-title').innerText = title;
             document.getElementById('success-msg').innerText = msg;
             document.getElementById('modal-success').style.display = 'flex';
-            playSound('success');
-            if(navigator.vibrate) navigator.vibrate([50]);
         }
-        function closeModal() {
-            document.getElementById('modal-success').style.display = 'none';
-            navTo('screen-dashboard');
-        }
+        function closeModal() { document.getElementById('modal-success').style.display = 'none'; navTo('screen-dashboard'); }
 
-        // --- INGLÉS ---
-        function checkEnglish(isCorrect) {
-            if(isCorrect) {
-                showSuccess("¡Correcto! Las plantas filtran el agua.");
+        // --- LÓGICA DE MÓDULOS NUEVOS ---
+
+        // 1. Siembra
+        function validateSowing() {
+            const c1 = document.getElementById('check-leaves').checked;
+            const c2 = document.getElementById('check-roots').checked;
+            const c3 = document.getElementById('check-height').checked;
+
+            if(c1 && c2 && c3) {
+                showSuccess("¡Listo para Trasplante!", "La plántula es fuerte y sobrevivirá en el sistema.");
             } else {
-                playSound('error');
-                alert("Inténtalo de nuevo. Lee la frase: 'plants filter the water'.");
+                alert("Aún no está lista. Si la trasplantas ahora, podría morir. Espera a que cumpla todos los criterios.");
             }
         }
 
-        // --- TECNOLOGÍA ---
-        let techSelection = 0;
-        function selectTech(id, el) {
-            techSelection = id;
+        // 2. Bitácora (Validación de rangos)
+        function validateLogbook() {
+            const ph = parseFloat(document.getElementById('input-ph').value);
+            const no2 = parseFloat(document.getElementById('input-no2').value);
+            const feedback = document.getElementById('logbook-feedback');
+            
+            if(isNaN(ph)) { alert("Ingresa al menos el pH."); return; }
+
+            feedback.style.display = 'block';
+            let msg = "";
+            let title = "Registro Completado";
+
+            // Lógica de feedback educativo
+            if (ph < 6.0) {
+                feedback.style.color = "var(--alert-red)";
+                feedback.innerText = "ALERTA: Agua muy ácida. Revisa el biofiltro.";
+                msg = "Se ha registrado una anomalía de acidez.";
+                title = "Alerta Registrada";
+            } else if (ph > 7.6) {
+                feedback.style.color = "var(--alert-red)";
+                feedback.innerText = "ALERTA: Agua muy alcalina. Las plantas no absorberán hierro.";
+                msg = "Se ha registrado una anomalía de alcalinidad.";
+                title = "Alerta Registrada";
+            } else {
+                feedback.style.color = "var(--primary-green)";
+                feedback.innerText = "Parámetros Saludables. ¡Buen trabajo!";
+                msg = "Los niveles de pH son óptimos para peces y plantas.";
+            }
+
+            if (no2 > 0.5) {
+                feedback.innerText += " PELIGRO: Nitritos altos.";
+                msg += " ¡Detén la alimentación inmediatamente!";
+            }
+
+            setTimeout(() => { showSuccess(title, msg); }, 1500);
+        }
+
+        // 3. Rutina Diaria
+        let fishBehavior = 0;
+        function selectBehavior(id, el) {
+            fishBehavior = id;
             document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
             el.classList.add('selected');
-            playSound('click');
+        }
+        function validateDaily() {
+            if(fishBehavior === 0) { alert("Selecciona un comportamiento."); return; }
+            if(fishBehavior === 1) showSuccess("Peces Sanos", "Apetito voraz es el mejor indicador de salud.");
+            else showSuccess("Alerta Veterinaria", "Comportamiento anormal registrado en bitácora. Observar por 24h.");
         }
 
-        function validateTech() {
-            if(techSelection === 3) {
-                showSuccess("¡Gran elección! Es ecológico, barato y eficiente.");
-            } else if (techSelection === 1) {
-                playSound('error');
-                alert("Cuidado: Los químicos dañarían a los peces.");
-            } else if (techSelection === 2) {
-                playSound('error');
-                alert("No es necesario gastar tanto dinero. Hay una opción mejor.");
-            } else {
-                alert("Por favor selecciona una opción.");
-            }
-        }
-
-        // --- BIOLOGÍA ---
-        document.getElementById('bio-selector').addEventListener('change', function() {
-            const targetBox = document.getElementById('bio-target');
-            const selectedText = this.options[this.selectedIndex].text;
-            if(this.value !== "0") {
-                 targetBox.innerText = selectedText.split('(')[0].trim();
-            } else {
-                 targetBox.innerText = "[ ??? ]";
-            }
-            playSound('click');
-        });
-
-        function validateBio() {
-            const val = document.getElementById('bio-selector').value;
-            if(val === "2") {
-                showSuccess("¡Exacto! Los desechos orgánicos alimentan a las plantas.");
-            } else {
-                playSound('error');
-                alert("Piénsalo bien: ¿Qué usaban los Aztecas como fertilizante?");
-            }
+        // 4. Bienestar Físico
+        function physFeel(feeling) {
+            showSuccess("¡Buen Entrenamiento!", `Has registrado tu actividad física. Sentirse ${feeling} es parte del proceso de adaptación. ¡Hidrátate!`);
         }
 
         // --- CÁMARA ---
         async function initCamera() {
             try {
                 const video = document.getElementById('camera-feed');
-                const placeholder = document.getElementById('camera-placeholder');
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                video.srcObject = stream;
-                video.style.display = 'block';
-                placeholder.style.display = 'none';
-                document.getElementById('btn-cam-open').style.display = 'none';
-                playSound('click');
-            } catch(e) { 
-                alert("Necesitamos permiso de cámara (asegúrate de usar HTTPS)."); 
-            }
-        }
-        function stopCam() {
-            const video = document.getElementById('camera-feed');
-            const placeholder = document.getElementById('camera-placeholder');
-            if(video.srcObject) {
-                video.srcObject.getTracks().forEach(t => t.stop());
-                video.srcObject = null;
-                video.style.display = 'none';
-                placeholder.style.display = 'flex';
-                document.getElementById('btn-cam-open').style.display = 'flex';
-            }
+                video.srcObject = stream; video.style.display = 'block';
+            } catch(e) { alert("Error cámara (usa HTTPS): " + e); }
         }
 
     </script>
