@@ -2,576 +2,467 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eco-Huerto PRO: Suite Híbrida</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Ingeniero Matemático Acuapónico</title>
     <style>
         :root {
-            --primary-green: #4CAF50;
-            --dark-green: #2E7D32;
-            --water-blue: #039BE5;
-            --earth-brown: #795548;
-            --sun-yellow: #FFB300;
-            --alert-red: #E53935;
-            --tech-purple: #7B1FA2;
-            --bg-color: #F1F8E9;
-            --card-bg: #FFFFFF;
-            --text-color: #37474F;
-            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+            --water-color: #3498db;
+            --plant-color: #2ecc71;
+            --fish-color: #e67e22;
+            --bio-color: #9b59b6;
+            --bg-color: #ecf0f1;
+            --text-color: #2c3e50;
+            --error-color: #c0392b;
+            --modal-overlay: rgba(0,0,0,0.7);
         }
-
-        * { box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #d4e6f1;
             color: var(--text-color);
-            margin: 0;
-            overflow: hidden;
-            height: 100vh;
             display: flex;
             flex-direction: column;
-            background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2727&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
         }
 
-        body::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.93); z-index: -1;
+        h1 { color: #2980b9; margin-bottom: 5px; text-align: center;}
+        .subtitle { text-align: center; margin-bottom: 20px; font-style: italic; color: #555; }
+
+        /* LEYENDA */
+        #legend-box {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            border: 2px solid #bdc3c7;
+            font-size: 0.9rem;
+        }
+        .legend-item span { font-size: 1.2rem; margin-right: 5px; }
+
+        /* CONTENEDOR PRINCIPAL */
+        #game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            border-top: 5px solid var(--water-color);
+            position: relative;
         }
 
-        /* --- UI ESTRUCTURA --- */
-        .screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; padding: 20px;
-            overflow-y: auto; z-index: 10; padding-bottom: 100px;
-        }
-        .screen.active { display: flex; animation: fadeIn 0.4s ease-out; }
-
-        .header-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 15px 20px;
-            margin: -20px -20px 20px -20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;
-            position: sticky; top: 0; z-index: 20;
+        #status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-weight: bold; color: #7f8c8d;
+            font-size: 1.1rem;
         }
 
-        .user-badge {
-            background: #E8F5E9; padding: 5px 12px; border-radius: 20px;
-            font-size: 0.8rem; color: var(--dark-green); font-weight: bold;
-            display: flex; align-items: center; gap: 5px; border: 1px solid var(--primary-green);
+        /* ÁREA DE LA ECUACIÓN */
+        #math-problem-box {
+            background-color: #f8f9fa;
+            border: 3px solid #bdc3c7;
+            padding: 20px;
+            font-size: 2.2rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            color: #34495e;
+            transition: all 0.3s ease;
         }
 
-        /* --- COMPONENTES --- */
-        .section-header {
-            font-size: 0.85rem; color: #90A4AE; text-transform: uppercase; letter-spacing: 1px;
-            font-weight: 800; margin: 25px 0 10px 0; border-bottom: 2px solid #CFD8DC;
+        #message-area {
+            min-height: 30px;
+            font-weight: bold;
+            color: var(--water-color);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
         }
 
-        .btn {
-            background: var(--primary-green); color: white; border: none; padding: 15px;
-            font-weight: 700; border-radius: 12px; cursor: pointer; margin: 10px 0;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 1rem; font-family: 'Nunito', sans-serif;
-            box-shadow: 0 4px 0 #388E3C; width: 100%; transition: 0.2s;
+        /* DIAGRAMA INTERACTIVO */
+        #aqua-diagram {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
         }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
-        .btn.outline { background: white; color: var(--text-color); border: 2px solid #ddd; box-shadow: none; }
         
-        .panel {
-            background: var(--card-bg); padding: 20px; border-radius: 20px;
-            margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        /* --- MENÚ PRINCIPAL --- */
-        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        
-        .module-card {
-            background: white; padding: 15px 10px; text-align: center;
-            border-radius: 15px; box-shadow: var(--shadow); cursor: pointer;
-            border: 2px solid transparent; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; min-height: 120px;
+        .aqua-component {
+            padding: 20px 15px;
+            border-radius: 12px;
+            cursor: pointer;
             transition: all 0.2s;
-        }
-        .module-card:hover { transform: translateY(-3px); border-color: var(--primary-green); }
-        .module-card i { font-size: 2.2rem; margin-bottom: 8px; }
-        .module-card h4 { margin: 0; font-size: 0.95rem; color: var(--text-color); }
-        .module-card span { font-size: 0.7rem; color: #90A4AE; margin-top: 4px; display: block; }
-
-        /* --- ACTIVIDADES HÍBRIDAS --- */
-        .hybrid-note {
-            background: #FFF8E1; border-left: 4px solid #FFC107; padding: 10px;
-            margin-bottom: 15px; border-radius: 4px; font-size: 0.9rem; color: #5D4037;
-        }
-        .hybrid-note i { vertical-align: bottom; margin-right: 5px; color: #FFA000; }
-
-        /* --- HARDWARE VISUALIZERS --- */
-        #mic-container {
-            width: 100%; height: 20px; background: #EEE; border-radius: 10px; overflow: hidden; margin: 15px 0; border: 1px solid #CCC;
-        }
-        #mic-bar {
-            width: 0%; height: 100%; background: linear-gradient(90deg, var(--water-blue), var(--primary-green)); transition: width 0.05s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+            border: 4px solid transparent;
         }
 
-        #camera-feed { width: 100%; border-radius: 10px; background: #000; display: none; margin-bottom: 10px; }
-        #camera-preview { width: 100%; border-radius: 10px; display: none; margin-bottom: 10px; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .aqua-component:hover { transform: translateY(-3px); filter: brightness(1.1); }
+        .aqua-component span { font-size: 2.5rem; margin-bottom: 10px; }
 
-        /* --- ANIMACIONES --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #btn-tank { background-color: var(--fish-color); }
+        #btn-bio { background-color: var(--bio-color); }
+        #btn-pump { background-color: var(--water-color); }
+        #btn-plants { background-color: var(--plant-color);}
 
-        /* --- MODAL --- */
-        #modal-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal-box {
-            background: white; padding: 30px; border-radius: 25px;
-            width: 85%; max-width: 350px; text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s;
+        /* MODAL PARA CÁLCULOS */
+        #math-modal {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--modal-overlay);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Selectores y Opciones */
-        .map-item {
-            padding: 15px; margin: 8px 0; border: 2px dashed #BDBDBD; border-radius: 10px;
-            cursor: pointer; text-align: center; transition: 0.3s; background: #FAFAFA;
+        #modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+            border-top: 5px solid var(--plant-color);
+            animation: slideDown 0.3s ease-out;
         }
-        .map-item.selected { border-color: var(--primary-green); background: #E8F5E9; border-style: solid; }
-        
-        .skill-slider { width: 100%; margin: 15px 0; accent-color: var(--primary-green); }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        #modal-operation {
+            font-size: 2rem;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        #math-input {
+            font-size: 1.5rem;
+            padding: 10px;
+            width: 80%;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #submit-btn {
+            background-color: var(--plant-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        #submit-btn:hover { background-color: #27ae60; }
+
+        /* Feedback Visual */
+        .flash-green { animation: flashSuccess 1s; }
+        .shake-red { animation: shakeError 0.5s; }
+
+        @keyframes flashSuccess {
+            0%, 100% { background-color: #f8f9fa; border-color: #bdc3c7; }
+            50% { background-color: #d5f5e3; border-color: var(--plant-color); }
+        }
+        @keyframes shakeError {
+             0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
 
     </style>
 </head>
 <body>
 
-    <!-- PANTALLA 1: BOOT -->
-    <div id="screen-boot" class="screen active" style="justify-content: center; align-items: center; text-align: center;">
-        <div style="background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 400px;">
-            <i class="material-icons" style="font-size: 5rem; color: var(--primary-green);">eco</i>
-            <h1 style="font-size: 2.2rem; margin: 10px 0;">Eco-Huerto PRO</h1>
-            <p style="color: #78909C; margin-bottom: 5px;">Edición Híbrida</p>
-            <p style="font-size: 0.7rem; color: #aaa;">MIC + CÁMARA + AUDIO REQUERIDOS</p>
-            <div style="width: 100%; height: 8px; background: #E0E0E0; border-radius: 4px; overflow: hidden; margin-top: 20px;">
-                <div id="boot-bar" style="width: 0%; height: 100%; background: var(--primary-green); transition: width 0.1s;"></div>
-            </div>
-            <button id="start-btn" class="btn" style="display:none; margin-top:20px;" onclick="startApp()">¡Iniciar Experiencia!</button>
-        </div>
+    <h1>🐟 Ingeniero Acuapónico: Cálculos Vitales 🌱</h1>
+    <p class="subtitle">1. Identifica la jerarquía. 2. Haz clic en el componente. 3. ¡Resuelve la operación!</p>
+
+    <div id="legend-box">
+        <div class="legend-item" style="color: var(--fish-color);"><span>🐟</span>( ) Tanque</div>
+        <div class="legend-item" style="color: var(--bio-color);"><span>🦠</span>x² Biofiltro</div>
+        <div class="legend-item" style="color: var(--water-color);"><span>🔄</span>×÷ Bomba</div>
+        <div class="legend-item" style="color: var(--plant-color);"><span>🌱</span>+- Plantas</div>
     </div>
 
-    <!-- PANTALLA 2: DASHBOARD -->
-    <div id="screen-dashboard" class="screen">
-        <div class="header-bar">
-            <div>
-                <div style="font-weight: 900; color: var(--text-color); font-size: 1.1rem;">Panel de Control</div>
-                <div style="font-size: 0.8rem; color: #90A4AE;">Curso Completo</div>
-            </div>
-            <div class="user-badge" id="role-display">
-                <i class="material-icons" style="font-size: 1rem;">person</i>
-                <span id="user-role-text">Explorador</span>
-            </div>
-        </div>
-        
-        <!-- NIVEL 1: CONTEXTO -->
-        <div class="section-header">Sesión 1-3: Contexto</div>
-        <div class="grid-menu">
-            <div class="module-card" onclick="navTo('screen-mapping')">
-                <i class="material-icons" style="color: var(--earth-brown);">public</i>
-                <h4>Mapeo</h4>
-                <span>Español / Geo</span>
-            </div>
-            <div class="module-card" onclick="navTo('screen-ancestral')">
-                <i class="material-icons" style="color: var(--sun-yellow);">history_edu</i>
-                <h4>Ancestros</h4>
-                <span>Biología</span>
-            </div>
-            <div class="module-card" onclick="navTo('screen-diagnostic')">
-                <i class="material-icons" style="color: var(--primary-green);">assignment_ind</i>
-                <h4>Diagnóstico</h4>
-                <span>Autoevaluación</span>
-            </div>
+    <div id="game-container">
+        <div id="status-bar">
+            <div>Nivel: <span id="level-num">1</span></div>
+            <div>Vidas: <span id="health">❤️❤️❤️</span></div>
         </div>
 
-        <!-- NIVEL 2: DISEÑO -->
-        <div class="section-header">Semana 3-4: Diseño (Hardware)</div>
-        <div class="grid-menu">
-            <div class="module-card" onclick="navTo('screen-english')">
-                <i class="material-icons" style="color: #AB47BC;">translate</i>
-                <h4>Global Uplink</h4>
-                <span>Inglés</span>
-            </div>
-            <div class="module-card" onclick="navTo('screen-tech')">
-                <i class="material-icons" style="color: var(--alert-red);">mic</i>
-                <h4>Mantenimiento</h4>
-                <span>Tecnología (Mic)</span>
-            </div>
-        </div>
+        <div id="math-problem-box">Cargando...</div>
 
-        <!-- NIVEL 3: ACCIÓN -->
-        <div class="section-header">Semana 9-16: Campo (Cámara/Audio)</div>
-        <div class="grid-menu">
-            <div class="module-card" onclick="navTo('screen-sowing')">
-                <i class="material-icons" style="color: var(--earth-brown);">local_florist</i>
-                <h4>Cultivo</h4>
-                <span>Evidencia (Foto)</span>
+        <div id="message-area">¿Qué operación resolvemos primero?</div>
+
+        <div id="aqua-diagram">
+            <div id="btn-tank" class="aqua-component" data-type="tank">
+                <span>🐟</span>Tanque ( )
             </div>
-            <div class="module-card" onclick="navTo('screen-routine')">
-                <i class="material-icons" style="color: var(--water-blue);">hearing</i>
-                <h4>Rutina</h4>
-                <span>Diagnóstico (Audio)</span>
+            <div id="btn-bio" class="aqua-component" data-type="bio">
+                <span>🦠</span>Biofiltro x²
+            </div>
+            <div id="btn-pump" class="aqua-component" data-type="pump">
+                <span>🔄</span>Bomba ×÷
+            </div>
+            <div id="btn-plants" class="aqua-component" data-type="plants">
+                <span>🌱</span>Plantas +-
             </div>
         </div>
     </div>
 
-    <!-- MÓDULO: MAPEO -->
-    <div id="screen-mapping" class="screen">
-        <div class="header-bar"><div>Mapeo de Problemática</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <div class="hybrid-note"><i class="material-icons">edit</i> <strong>Actividad Híbrida:</strong><br>Dibuja en tu libreta un mapa de tu escuela marcando las zonas de tierra erosionada.</div>
-            <p><strong>Digital:</strong> Conecta el problema del "Suelo Erosionado" con la solución acuapónica.</p>
-            <div class="map-item" onclick="selectMap(1)" id="map-1"><strong>A. Traer tierra fértil</strong><br><small>Costoso y difícil transporte.</small></div>
-            <div class="map-item" onclick="selectMap(2)" id="map-2"><strong>B. Cultivo Sin Suelo (Sustrato)</strong><br><small>Independencia del suelo degradado.</small></div>
-            <button class="btn" onclick="validateMap()">Confirmar Conexión</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: ANCESTROS -->
-    <div id="screen-ancestral" class="screen">
-        <div class="header-bar"><div>Saberes Ancestrales</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <div class="hybrid-note"><i class="material-icons">search</i> <strong>Investigación:</strong><br>Busca imágenes de Chinampas y pégalas en el cartel del salón.</div>
-            <p><strong>Reflexión:</strong> ¿Qué principio comparten la Chinampa y la Acuaponía?</p>
-            <select id="ancestral-select" style="width:100%; padding:10px; margin-bottom:10px;">
-                <option value="0">Seleccionar...</option>
-                <option value="1">Uso de Plásticos</option>
-                <option value="2">Reciclaje de Nutrientes</option>
-            </select>
-            <button class="btn" onclick="validateAncestral()">Reflexionar</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: DIAGNÓSTICO -->
-    <div id="screen-diagnostic" class="screen">
-        <div class="header-bar"><div>Diagnóstico</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <p>Autoevalúa tu conocimiento para definir tu rol.</p>
-            <label>Ciclo del Nitrógeno</label><input type="range" class="skill-slider" min="0" max="100" value="0">
-            <label>Cuidado de Peces</label><input type="range" class="skill-slider" min="0" max="100" value="0">
-            <button class="btn" onclick="calculateRole()">Obtener Rango</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: INGLÉS -->
-    <div id="screen-english" class="screen">
-        <div class="header-bar"><div>Global Uplink</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <div class="hybrid-note"><i class="material-icons">menu_book</i> <strong>Notebook:</strong><br>Write down 3 new words from this text.</div>
-            <div style="background:#F3E5F5; padding:15px; border-radius:10px; margin-bottom:15px; color:#4A148C;">
-                "Aquaponics is a solution for places with <strong>droughts</strong> (sequías). It saves water."
-            </div>
-            <button class="btn outline" onclick="showModal('Correct!', 'Good job reading.')">It saves water</button>
-            <button class="btn outline" onclick="playSound('error')">It wastes water</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: TECNOLOGÍA (MICRÓFONO) -->
-    <div id="screen-tech" class="screen">
-        <div class="header-bar"><div>Mantenimiento (Mic)</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <h3 style="color:var(--alert-red); margin-top:0;"><i class="material-icons">warning</i> Tubería Obstruida</h3>
-            <p>Una burbuja de aire bloquea el flujo. Usa el micrófono para simular presión de aire y destaparlo.</p>
-            <div class="hybrid-note"><strong>Instrucción:</strong> Sopla fuerte hacia la parte inferior de tu teléfono.</div>
-            
-            <div id="mic-container"><div id="mic-bar"></div></div>
-            <p id="mic-status" style="text-align:center; font-weight:bold; color:#777;">Presión: 0%</p>
-            
-            <button class="btn" id="btn-mic" onclick="initMic()">Activar Sensor de Presión</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: CULTIVO (CÁMARA) -->
-    <div id="screen-sowing" class="screen">
-        <div class="header-bar"><div>Evidencia de Campo</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <div class="hybrid-note"><i class="material-icons">camera_alt</i> <strong>Actividad:</strong><br>Toma una foto de tu semillero o de tu diagrama en la libreta.</div>
-            
-            <video id="camera-feed" autoplay playsinline></video>
-            <canvas id="camera-canvas" style="display:none;"></canvas>
-            <img id="camera-preview" src="">
-            
-            <button class="btn" id="btn-cam-start" onclick="initCamera()">Iniciar Cámara</button>
-            <button class="btn" id="btn-cam-snap" style="display:none;" onclick="takePhoto()">Capturar Evidencia</button>
-            <button class="btn outline" id="btn-cam-retry" style="display:none;" onclick="retryPhoto()">Reintentar</button>
-            <button class="btn" id="btn-cam-save" style="display:none;" onclick="saveEvidence()">Guardar en Bitácora</button>
-        </div>
-    </div>
-
-    <!-- MÓDULO: RUTINA (AUDIO) -->
-    <div id="screen-routine" class="screen">
-        <div class="header-bar"><div>Diagnóstico Auditivo</div><button onclick="navTo('screen-dashboard')" class="btn outline" style="width:auto; padding:5px 15px;">X</button></div>
-        <div class="panel">
-            <div class="hybrid-note"><i class="material-icons">hearing</i> <strong>Oído Atento:</strong><br>Escucha el sonido de la bomba. ¿Suena uniforme o interrumpido?</div>
-            
-            <div style="text-align:center; margin:20px;">
-                <button class="btn outline" style="width:80px; height:80px; border-radius:50%; margin:0 auto;" onclick="playPumpSound()">
-                    <i class="material-icons" style="font-size:2rem; color:var(--water-blue);">volume_up</i>
-                </button>
-                <p>Tocame para escuchar</p>
-            </div>
-
-            <p>Diagnóstico:</p>
-            <button class="btn outline" onclick="diagnoseSound(true)">Funcionamiento Normal (Zumbido constante)</button>
-            <button class="btn outline" onclick="diagnoseSound(false)">Aire en la bomba (Sonido irregular)</button>
-        </div>
-    </div>
-
-    <!-- MODAL GLOBAL -->
-    <div id="modal-overlay">
-        <div class="modal-box">
-            <div style="background:#E8F5E9; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px auto;">
-                <i class="material-icons" style="font-size:2rem; color:var(--primary-green);">check</i>
-            </div>
-            <h2 id="modal-title" style="margin:0; color:var(--text-color);">Título</h2>
-            <p id="modal-msg" style="color:#78909C; margin:15px 0;">Mensaje</p>
-            <button class="btn" onclick="closeModal()">Continuar</button>
+    <div id="math-modal">
+        <div id="modal-content">
+            <h3>🔢 Resuelve esta parte del sistema:</h3>
+            <div id="modal-operation"></div>
+            <input type="number" id="math-input" placeholder="Tu resultado...">
+            <br>
+            <button id="submit-btn">✔ Verificar Cálculo</button>
+            <p id="modal-feedback" style="color: var(--error-color); min-height: 20px;"></p>
         </div>
     </div>
 
     <script>
-        // --- AUDIO ENGINE ---
-        let audioCtx;
-        
-        function initAudio() {
-            if (!audioCtx) {
-                try {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                } catch(e) { console.log('Web Audio API not supported'); }
-            }
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
+        // --- VARIABLES DE ESTADO ---
+        let currentLevelIndex = 0;
+        let currentStepIndex = 0;
+        let lives = 3;
+        let isGameActive = true;
 
-        function playSound(type) {
-            initAudio();
-            if (!audioCtx) return;
-
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            if (type === 'success') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-            } else if (type === 'click') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            }
-        }
-
-        // --- BOOT ---
-        function startApp() {
-            initAudio(); // Iniciar contexto de audio con interacción usuario
-            navTo('screen-dashboard');
-        }
-
-        window.onload = () => {
-            let width = 0; const bar = document.getElementById('boot-bar');
-            const interval = setInterval(() => {
-                width += 4; bar.style.width = width + '%';
-                if(width >= 100) { 
-                    clearInterval(interval); 
-                    document.getElementById('start-btn').style.display = 'block';
-                    document.querySelector('#screen-boot p:last-of-type').innerText = "LISTO PARA INICIAR";
-                }
-            }, 30);
-        };
-
-        function navTo(id) {
-            stopMedia(); // Detener cámara/mic al cambiar pantalla
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            playSound('click');
-        }
-
-        function showModal(title, msg) {
-            playSound('success');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-msg').innerText = msg;
-            document.getElementById('modal-overlay').style.display = 'flex';
-        }
-        function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; navTo('screen-dashboard'); }
-
-        function stopMedia() {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-            }
-            if (micInterval) clearInterval(micInterval);
-            
-            // Reset UI elements
-            const video = document.getElementById('camera-feed');
-            if(video) video.style.display = 'none';
-        }
-        let currentStream = null;
-        let micInterval = null;
-
-        // --- MICRÓFONO (TECNOLOGÍA) ---
-        async function initMic() {
-            initAudio();
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                currentStream = stream;
-                const analyser = audioCtx.createAnalyser();
-                const microphone = audioCtx.createMediaStreamSource(stream);
-                const javascriptNode = audioCtx.createScriptProcessor(2048, 1, 1);
-
-                analyser.smoothingTimeConstant = 0.8;
-                analyser.fftSize = 1024;
-
-                microphone.connect(analyser);
-                analyser.connect(javascriptNode);
-                javascriptNode.connect(audioCtx.destination);
-
-                document.getElementById('btn-mic').style.display = 'none';
-                document.getElementById('mic-status').innerText = "Sopla ahora...";
-
-                javascriptNode.onaudioprocess = function() {
-                    var array = new Uint8Array(analyser.frequencyBinCount);
-                    analyser.getByteFrequencyData(array);
-                    var values = 0;
-                    var length = array.length;
-                    for (var i = 0; i < length; i++) { values += array[i]; }
-                    var average = values / length;
-                    
-                    let percent = Math.min(average * 2, 100);
-                    document.getElementById('mic-bar').style.width = percent + "%";
-                    document.getElementById('mic-status').innerText = "Presión: " + Math.round(percent) + "%";
-
-                    if(percent > 90) {
-                        javascriptNode.onaudioprocess = null;
-                        stopMedia();
-                        showModal("¡Tubería Despejada!", "La presión del aire eliminó la obstrucción. Flujo restablecido.");
+        // --- DEFINICIÓN DE NIVELES (ESTRUCTURA MÁS COMPLEJA) ---
+        const levels = [
+            {
+                // Nivel 1: Multiplicación vs Suma
+                initialEquation: "20 + 5 × 4",
+                steps: [
+                    {
+                        targetComponent: 'pump', // Primero la multiplicación
+                        operationToShow: "5 × 4", // Lo que el alumno debe resolver
+                        correctAnswer: 20, // La respuesta numérica
+                        newEquationHtml: "20 + <span style='color:var(--water-color)'>20</span>" // Cómo se ve después
+                    },
+                    {
+                        targetComponent: 'plants', // Luego la suma
+                        operationToShow: "20 + 20",
+                        correctAnswer: 40,
+                        newEquationHtml: "<span style='color:var(--plant-color)'>40</span> (Sistema Estable)",
+                        isFinal: true
                     }
-                }
-            } catch(e) {
-                alert("Error Micrófono (Requiere HTTPS): " + e);
+                ]
+            },
+            {
+                // Nivel 2: Paréntesis y División
+                initialEquation: "( 30 - 10 ) ÷ 2",
+                steps: [
+                    {
+                        targetComponent: 'tank', // Primero paréntesis
+                        operationToShow: "30 - 10",
+                        correctAnswer: 20,
+                        newEquationHtml: "<span style='color:var(--fish-color)'>20</span> ÷ 2"
+                    },
+                    {
+                        targetComponent: 'pump', // Luego división
+                        operationToShow: "20 ÷ 2",
+                        correctAnswer: 10,
+                        newEquationHtml: "<span style='color:var(--plant-color)'>10</span> (Flujo Correcto)",
+                        isFinal: true
+                    }
+                ]
+            },
+            {
+                // Nivel 3: Potencia y Suma
+                initialEquation: "Biofiltro + 15",
+                displayOverride: "3<sup>2</sup> + 15", // Para mostrar potencias visualmente
+                steps: [
+                    {
+                        targetComponent: 'bio', // Primero potencia
+                        operationToShow: "3<sup>2</sup> (3 x 3)",
+                        correctAnswer: 9,
+                        newEquationHtml: "<span style='color:var(--bio-color)'>9</span> + 15"
+                    },
+                    {
+                        targetComponent: 'plants',
+                        operationToShow: "9 + 15",
+                        correctAnswer: 24,
+                        newEquationHtml: "<span style='color:var(--plant-color)'>24</span> (Bacterias Activas)",
+                        isFinal: true
+                    }
+                ]
+            },
+             {
+                // Nivel 4: Completo
+                initialEquation: "5 + ( 2 × 3 )<sup>2</sup>",
+                steps: [
+                    {
+                        targetComponent: 'tank', // 1. Paréntesis interno
+                        operationToShow: "2 × 3",
+                        correctAnswer: 6,
+                        newEquationHtml: "5 + (<span style='color:var(--fish-color)'>6</span>)<sup>2</sup>"
+                    },
+                    {
+                        targetComponent: 'bio', // 2. Potencia
+                        operationToShow: "6<sup>2</sup>",
+                        correctAnswer: 36,
+                        newEquationHtml: "5 + <span style='color:var(--bio-color)'>36</span>"
+                    },
+                    {
+                        targetComponent: 'plants', // 3. Suma final
+                        operationToShow: "5 + 36",
+                        correctAnswer: 41,
+                        newEquationHtml: "<span style='color:var(--plant-color)'>41</span> (Cosecha Lista!)",
+                        isFinal: true
+                    }
+                ]
             }
-        }
+        ];
 
-        // --- CÁMARA (EVIDENCIA) ---
-        async function initCamera() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                currentStream = stream;
-                const video = document.getElementById('camera-feed');
-                video.srcObject = stream;
-                video.style.display = 'block';
-                document.getElementById('camera-preview').style.display = 'none';
-                document.getElementById('btn-cam-start').style.display = 'none';
-                document.getElementById('btn-cam-snap').style.display = 'block';
-            } catch(e) { alert("Error Cámara (Requiere HTTPS): " + e); }
-        }
-
-        function takePhoto() {
-            const video = document.getElementById('camera-feed');
-            const canvas = document.getElementById('camera-canvas');
-            const img = document.getElementById('camera-preview');
-            
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            img.src = canvas.toDataURL('image/png');
-            img.style.display = 'block';
-            video.style.display = 'none';
-            
-            stopMedia(); // Stop video stream to save battery
-            document.getElementById('btn-cam-snap').style.display = 'none';
-            document.getElementById('btn-cam-retry').style.display = 'inline-block';
-            document.getElementById('btn-cam-save').style.display = 'inline-block';
-        }
-
-        function retryPhoto() {
-            document.getElementById('btn-cam-retry').style.display = 'none';
-            document.getElementById('btn-cam-save').style.display = 'none';
-            initCamera();
-        }
-
-        function saveEvidence() {
-            showModal("Evidencia Guardada", "La fotografía se ha vinculado a tu bitácora digital.");
-        }
-
-        // --- BOCINAS (RUTINA) ---
-        let pumpSoundHealthy = true; // Randomize in a real app
+        // --- ELEMENTOS DOM ---
+        const mathBox = document.getElementById('math-problem-box');
+        const messageArea = document.getElementById('message-area');
+        const levelDisplay = document.getElementById('level-num');
+        const healthDisplay = document.getElementById('health');
+        const components = document.querySelectorAll('.aqua-component');
         
-        function playPumpSound() {
-            initAudio();
-            // Simular sonido de bomba (ruido blanco filtrado o tono bajo)
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            // Sonido grave "HMMM"
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(60, audioCtx.currentTime); // 60Hz hum
-            
-            // Modulación ligera para realismo
-            const lfo = audioCtx.createOscillator();
-            lfo.frequency.value = 10; // 10Hz rattle
-            const lfoGain = audioCtx.createGain();
-            lfoGain.gain.value = 5;
-            lfo.connect(lfoGain);
-            lfoGain.connect(osc.frequency);
-            lfo.start();
+        // Modal elements
+        const modal = document.getElementById('math-modal');
+        const modalOp = document.getElementById('modal-operation');
+        const mathInput = document.getElementById('math-input');
+        const submitBtn = document.getElementById('submit-btn');
+        const modalFeedback = document.getElementById('modal-feedback');
 
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        // --- INICIO ---
+        function initGame() {
+            currentLevelIndex = 0;
+            lives = 3;
+            isGameActive = true;
+            updateStatus();
+            loadLevel();
             
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 2); // 2 segundos de audio
-            lfo.stop(audioCtx.currentTime + 2);
+            // Event listeners
+            components.forEach(comp => comp.addEventListener('click', handleComponentClick));
+            submitBtn.addEventListener('click', checkMathResult);
+            // Permitir Enter en el input
+            mathInput.addEventListener('keypress', (e) => { if(e.key === 'Enter') checkMathResult(); });
         }
 
-        function diagnoseSound(userGuess) {
-            // En esta demo, el sonido siempre es el "Normal" (Healthy)
-            if(userGuess === true) {
-                showModal("Diagnóstico Correcto", "La bomba suena estable y sin obstrucciones.");
+        // --- CARGAR NIVEL ---
+        function loadLevel() {
+            if (currentLevelIndex >= levels.length) { gameWin(); return; }
+            
+            currentStepIndex = 0;
+            const levelData = levels[currentLevelIndex];
+            // Usar displayOverride si existe (para potencias HTML), si no, la ecuación inicial normal
+            mathBox.innerHTML = levelData.displayOverride || levelData.initialEquation;
+            levelDisplay.textContent = currentLevelIndex + 1;
+            messageArea.textContent = "Aplica la jerarquía: ¿Qué componente activamos primero?";
+            messageArea.style.color = "var(--water-color)";
+        }
+
+        // --- MANEJO DE CLICS EN COMPONENTES ---
+        function handleComponentClick(e) {
+            if (!isGameActive) return;
+
+            const clickedType = e.currentTarget.dataset.type;
+            const currentStepData = levels[currentLevelIndex].steps[currentStepIndex];
+
+            if (clickedType === currentStepData.targetComponent) {
+                // ¡Jerarquía CORRECTA! Abrir modal para calcular
+                openMathModal(currentStepData.operationToShow);
+                messageArea.textContent = "Jerarquía correcta. Ahora resuelve el cálculo.";
             } else {
-                playSound('error');
-                alert("Incorrecto. El sonido es constante, lo cual indica buen funcionamiento.");
+                // Jerarquía INCORRECTA
+                lives--;
+                updateStatus();
+                messageArea.textContent = "¡ERROR DE ORDEN! Ese componente no va ahora. El sistema sufre.";
+                messageArea.style.color = "var(--error-color)";
+                mathBox.classList.add('shake-red');
+                setTimeout(() => mathBox.classList.remove('shake-red'), 500);
+                if (lives <= 0) gameOver();
             }
         }
 
-        // --- UTILS MAPEO/DIAGNÓSTICO ---
-        let mapSelection = 0;
-        function selectMap(id) { mapSelection = id; document.querySelectorAll('.map-item').forEach(e=>e.classList.remove('selected')); document.getElementById('map-'+id).classList.add('selected'); }
-        function validateMap() { if(mapSelection===2) showModal('Correcto', 'Acuaponía soluciona la erosión.'); else playSound('error'); }
-
-        function validateAncestral() { if(document.getElementById('ancestral-select').value === "2") showModal('Bien', 'Reciclaje de nutrientes es la clave.'); else playSound('error'); }
-        
-        function calculateRole() {
-            showModal("Rol: Especialista", "¡Bienvenido al equipo!");
-            document.getElementById('user-role-text').innerText = "Especialista";
+        // --- LÓGICA DEL MODAL Y CÁLCULO ---
+        function openMathModal(operationText) {
+            modalOp.innerHTML = operationText + " = ?";
+            mathInput.value = "";
+            modalFeedback.textContent = "";
+            modal.style.display = 'flex';
+            mathInput.focus();
         }
+
+        function checkMathResult() {
+            const userValue = parseInt(mathInput.value);
+            const currentStepData = levels[currentLevelIndex].steps[currentStepIndex];
+
+            if (userValue === currentStepData.correctAnswer) {
+                // --- CÁLCULO CORRECTO ---
+                modal.style.display = 'none';
+                mathBox.innerHTML = currentStepData.newEquationHtml;
+                mathBox.classList.add('flash-green');
+                setTimeout(() => mathBox.classList.remove('flash-green'), 1000);
+
+                if (currentStepData.isFinal) {
+                    messageArea.textContent = "¡Cálculo final correcto! Nivel completado.";
+                    setTimeout(() => {
+                        currentLevelIndex++;
+                        loadLevel();
+                    }, 2000);
+                } else {
+                    messageArea.textContent = "¡Bien hecho! La ecuación se simplificó. ¿Qué sigue?";
+                    currentStepIndex++;
+                }
+
+            } else {
+                // --- CÁLCULO INCORRECTO ---
+                modalFeedback.textContent = "Resultado incorrecto. Inténtalo de nuevo.";
+                mathInput.classList.add('shake-red');
+                setTimeout(() => mathInput.classList.remove('shake-red'), 500);
+                mathInput.value = "";
+                mathInput.focus();
+            }
+        }
+
+        function updateStatus() {
+            healthDisplay.textContent = '❤️'.repeat(lives);
+        }
+
+        function gameOver() {
+            isGameActive = false;
+            mathBox.textContent = "SISTEMA CRÍTICO - FIN DEL JUEGO";
+            messageArea.textContent = "Demasiados errores de jerarquía. Los peces no sobrevivieron.";
+        }
+
+        function gameWin() {
+             isGameActive = false;
+             mathBox.innerHTML = "<span style='color:var(--plant-color)'>¡MAESTRO ACUAPÓNICO!</span>";
+             messageArea.textContent = "Has completado todos los desafíos matemáticos del huerto.";
+        }
+
+        // Arrancar el juego
+        initGame();
 
     </script>
 </body>
